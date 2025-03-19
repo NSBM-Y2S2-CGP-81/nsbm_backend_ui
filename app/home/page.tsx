@@ -30,25 +30,25 @@ export default function Home() {
       <div className="flex items-center justify-center w-screen gap-10">
         <GlassmorphicCard
           title="User Status"
-          text="Currently Active Users: 100"
+          text="Currently Active Users: ( ! )"
           buttonText="->"
           onClick={() => console.log("Button Clicked!")}
         />
         <GlassmorphicCard
           title="Event Details"
-          text="Event Requests : 20"
+          text="Event Requests : ( ! )"
           buttonText="->"
           onClick={() => (window.location.href = "/events")}
         />
         <GlassmorphicCard
           title="News Feed"
-          text="Currently Posted News: 40"
+          text="Currently Posted News: ( ! )"
           buttonText="->"
-          onClick={() => console.log("Button Clicked!")}
+          onClick={() => (window.location.href = "/news")}
         />
         <GlassmorphicCard
           title="AP Remote Uplink"
-          text="Current Status: Receiving"
+          text="Current Status: ( ! )"
           buttonText="->"
           onClick={() => console.log("Button Clicked!")}
         />
