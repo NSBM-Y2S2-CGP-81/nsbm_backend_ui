@@ -116,9 +116,9 @@ export default function Home() {
 
   return (
     <div>
-      <Navbar />
-      <div className="flex flex-col items-center justify-center p-10">
-        <h1 className="text-5xl">Currently Available Events</h1>
+      <Navbar name="NSBM SA: Events Management Interface [ADMIN]" />
+      <div className="pt-30 flex flex-col items-center justify-center p-10">
+        {/* <h1 className="text-5xl">Currently Available Events</h1> */}
 
         {/* Loading animation */}
         {loading ? (
@@ -126,7 +126,7 @@ export default function Home() {
             <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-50">
             {events.map((event, index) => (
               <Card
                 key={index}
@@ -144,7 +144,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-10 p-10 flex-col bg-white/10 backdrop-blur-3xl backdrop-saturate-150 rounded-2xl border border-white/20  shadow-white/10">
+      <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center gap-10 p-10 flex-col bg-white/10 backdrop-blur-3xl backdrop-saturate-150 rounded-2xl border border-white/20  shadow-white/10">
         <form onSubmit={handleSubmit} className="">
           <h2 className="text-3xl mb-4">Add New Event</h2>
           <input

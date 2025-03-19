@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <div>
       <Navbar />
-      <div className="flex flex-col items-center justify-center p-10">
+      <div className="pt-25 flex flex-col items-center justify-center p-10">
         <SystemMonitor />
       </div>
       <div className="flex items-center justify-center w-screen gap-10">
