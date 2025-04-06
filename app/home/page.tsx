@@ -23,7 +23,9 @@ export default function Home() {
 
   return (
     <div>
-      <Navbar />
+      <div className="pb-20">
+        <Navbar />
+      </div>
       <div className="pt-25 flex flex-col items-center justify-center p-10">
         <SystemMonitor />
       </div>
