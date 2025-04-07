@@ -15,8 +15,9 @@ export default function UsersPage() {
       try {
         const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
         console.log(API_KEY);
-        const res = fetchData("users", API_KEY);
-        setUsers(res);
+        const res = await fetchData("users", API_KEY);
+        console.log("Fetched users:", res); // Log the response to check its structure
+        setUsers(Array.isArray(res) ? res : []); // Ensure users is always an array
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch users:", error);
