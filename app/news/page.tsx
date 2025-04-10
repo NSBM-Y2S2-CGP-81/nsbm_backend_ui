@@ -109,7 +109,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right side: Add News Form */}
         <div className="fixed right-1 flex-none w-96 p-6 bg-black/50 backdrop-blur-xl backdrop-saturate-200 rounded-2xl border border-white/20 shadow-xl h-full">
           <form
             onSubmit={handleSubmit}
