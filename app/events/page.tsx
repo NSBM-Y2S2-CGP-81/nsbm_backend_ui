@@ -77,21 +77,20 @@ export default function Home() {
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (id) => {
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
-      const formData = new FormData();
-      Object.keys(selectedEvent).forEach((key) => {
-        formData.append(key, selectedEvent[key]);
-      });
+
+      // Create a copy of the event without the _id field
+      const { _id, ...updateData } = selectedEvent;
 
       await axios.put(
-        `${SERVER_ADDRESS}/data/events/update/${selectedEvent.id}`,
-        formData,
+        `${SERVER_ADDRESS}/data/events/update/${id}`,
+        updateData,
         {
           headers: {
             Authorization: `Bearer ${API_KEY}`,
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
         },
       );
@@ -340,7 +339,10 @@ export default function Home() {
             )}
             <button
               className="bg-yellow-500 text-white p-2 mt-4 rounded hover:bg-yellow-600 w-full"
-              onClick={handleEdit}
+              onClick={() => {
+                console.log(selectedEvent._id);
+                handleEdit(selectedEvent._id);
+              }}
             >
               Save Changes
             </button>
