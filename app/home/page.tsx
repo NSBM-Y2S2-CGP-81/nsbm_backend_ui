@@ -56,7 +56,7 @@ export default function EventManagementPage() {
           title="Event Details"
           text="Check & Edit Event Details"
           buttonText="->"
-          onClick={() => (window.location.href = "/mainE")}
+          onClick={() => (window.location.href = "/events_main")}
         />
         <GlassmorphicCard
           title="News Feed"
