@@ -240,6 +240,25 @@ export default function EventRequestsPage() {
                     ) : null}
                     Approve
                   </button>
+
+                  <button
+                    onClick={() =>
+                      //Download the file in request.file
+                      {
+                        const link = document.createElement("a");
+                        link.href = `data:${request.file.type};base64,${request.file.data}`;
+                        link.download = request.file.name;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
+                    }
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm flex justify-center items-center"
+                  >
+                    {" "}
+                    Download Document{" "}
+                  </button>
+
                   <button
                     onClick={() => handleDelete(request._id)}
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded text-sm flex justify-center items-center"

@@ -20,6 +20,7 @@ export default function Home() {
   const [searchDate, setSearchDate] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -56,6 +57,7 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setButtonLoading(true);
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
       await axios.post(`${SERVER_ADDRESS}/data/events/store`, newEvent, {
@@ -74,10 +76,13 @@ export default function Home() {
       });
     } catch (error) {
       console.log("Error adding event:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
 
   const handleEdit = async (id) => {
+    setButtonLoading(true);
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
 
@@ -103,10 +108,13 @@ export default function Home() {
       setSelectedEvent(null);
     } catch (error) {
       console.log("Error updating event:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
+    setButtonLoading(true);
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
       await axios.delete(`${SERVER_ADDRESS}/data/events/delete/${id}`, {
@@ -114,9 +122,12 @@ export default function Home() {
           Authorization: `Bearer ${API_KEY}`,
         },
       });
-      setEvents(events.filter((event) => event.id !== id));
+      await fetchEvents();
+      setEvents(events.filter((event) => event._id !== id));
     } catch (error) {
       console.log("Error deleting event:", error);
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -269,7 +280,11 @@ export default function Home() {
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
                   onClick={() => handleDelete(event._id)}
                 >
-                  DELETE
+                  {buttonLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-dashed rounded-full animate-spin"></div>
+                  ) : (
+                    "DELETE"
+                  )}
                 </button>
               </div>
             </div>
@@ -344,7 +359,11 @@ export default function Home() {
                 handleEdit(selectedEvent._id);
               }}
             >
-              Save Changes
+              {buttonLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-dashed rounded-full animate-spin mx-auto"></div>
+              ) : (
+                "Save Changes"
+              )}
             </button>
             <button
               className="bg-gray-600 text-white p-2 mt-2 rounded hover:bg-gray-700 w-full"
