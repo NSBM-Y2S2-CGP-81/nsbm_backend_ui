@@ -211,6 +211,22 @@ export default function Home() {
             </select>
           </div>
 
+          {/* Status */}
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-white mb-1">Status</label>
+            <select
+              //name="Status"
+              //value={searchLocation}
+              // onChange={handleSearchChange}
+              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+              > 
+              <option className="bg-gray-700 text-white">All</option>
+              <option className="bg-gray-700 text-white">Onging</option>
+              <option className="bg-gray-700 text-white">Reschedule</option>
+              <option className="bg-gray-700 text-white">Onging</option>
+             </select>
+            </div>
+
           {/* Name */}
           <div className="flex flex-col min-w-[150px]">
             <label className="text-white mb-1">Name</label>
@@ -266,7 +282,7 @@ export default function Home() {
               <div className="text-sm mt-2 space-y-1 text-gray-200">
                 <p>Date: {event.event_date}</p>
                 <p>Time: {event.event_time}</p>
-                <p>Location: {event.event_venue}</p>
+                <p>Status: onging</p>
                 <p>Seats: 50/{event.event_tickets}</p>
               </div>
               <div className="mt-4 flex gap-3">
