@@ -65,8 +65,8 @@ export default function EventManagementPage() {
           onClick={() => (window.location.href = "/news")}
         />
         <GlassmorphicCard
-          title="AP Remote Uplink"
-          text="Check & Edit Remote Uplink"
+          title="MongoDB Interface"
+          text="Communicate with MongoDB"
           buttonText="->"
           onClick={() => console.log("Button Clicked!")}
         />
