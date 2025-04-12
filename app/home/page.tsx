@@ -68,7 +68,7 @@ export default function EventManagementPage() {
           title="MongoDB Interface"
           text="Communicate with MongoDB"
           buttonText="->"
-          onClick={() => console.log("Button Clicked!")}
+          onClick={() => (window.location.href = "/mongodb")}
         />
       </div>
     </div>

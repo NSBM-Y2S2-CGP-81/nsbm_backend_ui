@@ -315,7 +315,7 @@ export default function MongoDBInterface() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A0D14] to-[#14182e] text-white p-6">
-      <div className="pb-35">
+      <div className="pb-20">
         <Navbar name="MongoDB Interface" />
       </div>
 
