@@ -5,6 +5,7 @@ import axios from "axios";
 import SERVER_ADDRESS from "@/config";
 import { Input } from "@/components/ui/input";
 import { CSVLink } from "react-csv";
+import Navbar from "@/components/navbar";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -21,6 +22,7 @@ export default function Home() {
   const [searchLocation, setSearchLocation] = useState("");
   const [searchName, setSearchName] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [registrationCounts, setRegistrationCounts] = useState({});
 
   useEffect(() => {
     async function fetchEvents() {
@@ -39,6 +41,20 @@ export default function Home() {
     }
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    const fetchRegistrationCounts = async () => {
+      const counts = {};
+      for (const event of events) {
+        counts[event._id] = await checkEventRegs(event);
+      }
+      setRegistrationCounts(counts);
+    };
+
+    if (events.length > 0) {
+      fetchRegistrationCounts();
+    }
+  }, [events]);
 
   const handleChange = (e) => {
     setNewEvent({ ...newEvent, [e.target.name]: e.target.value });
@@ -66,6 +82,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
       });
+
       setEvents([...events, newEvent]);
       setNewEvent({
         event_name: "",
@@ -110,6 +127,7 @@ export default function Home() {
       console.log("Error updating event:", error);
     } finally {
       setButtonLoading(false);
+      window.location.reload();
     }
   };
 
@@ -128,6 +146,7 @@ export default function Home() {
       console.log("Error deleting event:", error);
     } finally {
       setButtonLoading(false);
+      window.location.reload();
     }
   };
 
@@ -138,6 +157,24 @@ export default function Home() {
       setSearchLocation(e.target.value);
     } else if (e.target.name === "name") {
       setSearchName(e.target.value);
+    }
+  };
+
+  const checkEventRegs = async (event) => {
+    try {
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+      const response = await axios.get(
+        `${SERVER_ADDRESS}/data/event_registrations/count?field=event_id&value=${event._id}&event_data_get=${event._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        },
+      );
+      return response.data.count || 0;
+    } catch (error) {
+      console.log(error);
+      return 0;
     }
   };
 
@@ -163,13 +200,18 @@ export default function Home() {
       Date: event.event_date,
       Time: event.event_time,
       Venue: event.event_venue,
+      Tickets: event.event_tickets,
+      Registrations: 0,
     }));
     return csvData;
   };
 
   return (
     <div className="min-h-screen bg-[#0A0D14] text-white p-4">
-      {/* TITLE */}
+      <div className="pb-35">
+        <Navbar name="Event Management" />
+      </div>
+
       <h2 className="text-2xl font-semibold mb-4 tracking-wide">
         UPCOMING EVENTS
       </h2>
@@ -262,12 +304,16 @@ export default function Home() {
                 className="rounded-xl w-full h-40 object-cover"
                 alt="Event"
               />
+
               <h3 className="mt-3 text-xl font-semibold">{event.event_name}</h3>
               <div className="text-sm mt-2 space-y-1 text-gray-200">
                 <p>Date: {event.event_date}</p>
                 <p>Time: {event.event_time}</p>
                 <p>Location: {event.event_venue}</p>
-                <p>Seats: 50/{event.event_tickets}</p>
+                <p>
+                  Registrations: {registrationCounts[event._id] || 0}/
+                  {event.event_tickets || "unlimited"}
+                </p>
               </div>
               <div className="mt-4 flex gap-3">
                 <button
