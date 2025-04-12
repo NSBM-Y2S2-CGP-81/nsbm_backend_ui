@@ -67,7 +67,7 @@ export default function EventRequestsPage() {
         event_tickets: requestData.maxTickets || 0,
         event_type: requestData.eventType || "",
         event_held_by: requestData.societyName || "",
-        event_status: "upcoming",
+        event_status: "Upcoming",
         event_link: requestData.registrationLink || "",
       };
 
