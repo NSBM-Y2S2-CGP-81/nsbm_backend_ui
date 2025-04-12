@@ -201,7 +201,7 @@ export default function Home() {
     const locationMatch =
       searchLocation === "" ||
       searchLocation === "All" ||
-      event.event_venue === searchLocation;
+      new RegExp(searchLocation, "i").test(event.event_venue);
     const nameMatch =
       searchName === "" ||
       event.event_name.toLowerCase().includes(searchName.toLowerCase());
