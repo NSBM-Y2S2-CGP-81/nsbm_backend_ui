@@ -21,6 +21,9 @@ export default function Home() {
   const [searchDate, setSearchDate] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [searchEventType, setSearchEventType] = useState("");
+  const [searchSociety, setSearchSociety] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
   const [registrationCounts, setRegistrationCounts] = useState({});
 
@@ -157,6 +160,12 @@ export default function Home() {
       setSearchLocation(e.target.value);
     } else if (e.target.name === "name") {
       setSearchName(e.target.value);
+    } else if (e.target.name === "eventType") {
+      setSearchEventType(e.target.value);
+    } else if (e.target.name === "society") {
+      setSearchSociety(e.target.value);
+    } else if (e.target.name === "status") {
+      setSearchStatus(e.target.value);
     }
   };
 
@@ -182,16 +191,41 @@ export default function Home() {
     setSearchDate("");
     setSearchLocation("");
     setSearchName("");
+    setSearchEventType("");
+    setSearchSociety("");
+    setSearchStatus("");
   };
 
   const filteredEvents = events.filter((event) => {
     const dateMatch = searchDate === "" || event.event_date === searchDate;
     const locationMatch =
-      searchLocation === "" || event.event_venue === searchLocation;
+      searchLocation === "" ||
+      searchLocation === "All" ||
+      event.event_venue === searchLocation;
     const nameMatch =
       searchName === "" ||
       event.event_name.toLowerCase().includes(searchName.toLowerCase());
-    return dateMatch && locationMatch && nameMatch;
+    const eventTypeMatch =
+      searchEventType === "" ||
+      searchEventType === "All" ||
+      event.event_type === searchEventType;
+    const societyMatch =
+      searchSociety === "" ||
+      searchSociety === "All" ||
+      event.event_held_by === searchSociety;
+    const statusMatch =
+      searchStatus === "" ||
+      searchStatus === "All" ||
+      event.event_status === searchStatus;
+
+    return (
+      dateMatch &&
+      locationMatch &&
+      nameMatch &&
+      eventTypeMatch &&
+      societyMatch &&
+      statusMatch
+    );
   });
 
   const exportData = () => {
@@ -200,8 +234,11 @@ export default function Home() {
       Date: event.event_date,
       Time: event.event_time,
       Venue: event.event_venue,
+      Type: event.event_type || "Unknown",
+      "Held By": event.event_held_by || "Unknown",
+      Status: event.event_status || "Unknown",
       Tickets: event.event_tickets,
-      Registrations: 0,
+      Registrations: registrationCounts[event._id] || 0,
     }));
     return csvData;
   };
@@ -253,19 +290,60 @@ export default function Home() {
             </select>
           </div>
 
+          {/* Event Type */}
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-white mb-1">Event Type</label>
+            <select
+              name="eventType"
+              value={searchEventType}
+              onChange={handleSearchChange}
+              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+            >
+              <option className="bg-gray-700 text-white">All</option>
+              <option className="bg-gray-700 text-white">
+                Event Held by a Club
+              </option>
+              <option className="bg-gray-700 text-white">
+                Event Held by a Society
+              </option>
+              <option className="bg-gray-700 text-white">A Stall</option>
+            </select>
+          </div>
+
+          {/* Society */}
+          <div className="flex flex-col min-w-[150px]">
+            <label className="text-white mb-1">Society</label>
+            <select
+              name="society"
+              value={searchSociety}
+              onChange={handleSearchChange}
+              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+            >
+              <option className="bg-gray-700 text-white">All</option>
+              <option className="bg-gray-700 text-white">FOSS</option>
+              <option className="bg-gray-700 text-white">IEEE</option>
+              <option className="bg-gray-700 text-white">NSBM</option>
+              <option className="bg-gray-700 text-white">Rotaract</option>
+              <option className="bg-gray-700 text-white">Leo Club</option>
+              <option className="bg-gray-700 text-white">AIESEC</option>
+            </select>
+          </div>
+
           {/* Status */}
           <div className="flex flex-col min-w-[150px]">
             <label className="text-white mb-1">Status</label>
             <select
-              //name="Status"
-              //value={searchLocation}
-              // onChange={handleSearchChange}
+              name="status"
+              value={searchStatus}
+              onChange={handleSearchChange}
               className="bg-gray-700 text-white p-2 rounded-md appearance-none"
             >
               <option className="bg-gray-700 text-white">All</option>
-              <option className="bg-gray-700 text-white">Onging</option>
-              <option className="bg-gray-700 text-white">Reschedule</option>
-              <option className="bg-gray-700 text-white">Onging</option>
+              <option className="bg-gray-700 text-white">Upcoming</option>
+              <option className="bg-gray-700 text-white">Ongoing</option>
+              <option className="bg-gray-700 text-white">Completed</option>
+              <option className="bg-gray-700 text-white">Cancelled</option>
+              <option className="bg-gray-700 text-white">Rescheduled</option>
             </select>
           </div>
 
@@ -317,7 +395,7 @@ export default function Home() {
             >
               <img
                 src={event.event_image}
-                className="rounded-xl w-full h-40 object-cover"
+                className="rounded-xl w-70 h-40 object-cover"
                 alt="Event"
               />
 
@@ -326,7 +404,9 @@ export default function Home() {
                 <p>Date: {event.event_date}</p>
                 <p>Time: {event.event_time}</p>
                 <p>Location: {event.event_venue}</p>
-                <p>Status: Unknown</p>
+                <p>Type: {event.event_type || "Unknown"}</p>
+                <p>Held by: {event.event_held_by || "Unknown"}</p>
+                <p>Status: {event.event_status || "Unknown"}</p>
                 <p>
                   Registrations: {registrationCounts[event._id] || 0}/
                   {event.event_tickets || "unlimited"}

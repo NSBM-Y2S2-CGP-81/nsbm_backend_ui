@@ -63,6 +63,8 @@ export default function EventRequestsPage() {
         event_description: requestData.description || "",
         event_venue: requestData.location || "",
         event_tickets: requestData.maxTickets || 0,
+        event_type: requestData.eventType || "",
+        event_held_by: requestData.societyName || "",
       };
 
       // Store the data in the events collection
@@ -214,6 +216,16 @@ export default function EventRequestsPage() {
                         Max Tickets:{" "}
                       </span>
                       {request.maxTickets}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-200">Type : </span>
+                      {request.eventType}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-200">
+                        Club/Society Name:{" "}
+                      </span>
+                      {request.societyName}
                     </p>
                   </div>
 
