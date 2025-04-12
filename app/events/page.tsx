@@ -488,6 +488,28 @@ export default function Home() {
               className="w-full p-2 border rounded mb-2"
               placeholder="Venue"
             />
+            {/* Status dropdown */}
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Event Status
+              </label>
+              <select
+                value={selectedEvent.event_status || "Upcoming"}
+                onChange={(e) =>
+                  setSelectedEvent({
+                    ...selectedEvent,
+                    event_status: e.target.value,
+                  })
+                }
+                className="w-full p-2 border rounded"
+              >
+                <option>Upcoming</option>
+                <option>Ongoing</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
+                <option>Rescheduled</option>
+              </select>
+            </div>
             {selectedEvent.event_image && (
               <img
                 src={selectedEvent.event_image}
