@@ -6,10 +6,27 @@ import SERVER_ADDRESS from "@/config";
 import { Input } from "@/components/ui/input";
 import { CSVLink } from "react-csv";
 import Navbar from "@/components/navbar";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  HiOutlineCalendar,
+  HiOutlineLocationMarker,
+  HiOutlineClock,
+  HiOutlineTag,
+  HiOutlineUserGroup,
+  HiOutlineStatusOnline,
+} from "react-icons/hi";
+import {
+  FiSearch,
+  FiFilter,
+  FiDownload,
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
+import Image from "next/image";
 
 export default function Home() {
-  const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [newEvent, setNewEvent] = useState({
     event_name: "",
     event_date: "",
@@ -25,7 +42,10 @@ export default function Home() {
   const [searchSociety, setSearchSociety] = useState("");
   const [searchStatus, setSearchStatus] = useState("");
   const [buttonLoading, setButtonLoading] = useState(false);
-  const [registrationCounts, setRegistrationCounts] = useState({});
+  const [registrationCounts, setRegistrationCounts] = useState<
+    Record<string, number>
+  >({});
+  const [isFiltersVisible, setIsFiltersVisible] = useState(true);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -47,7 +67,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchRegistrationCounts = async () => {
-      const counts = {};
+      const counts: Record<string, number> = {};
       for (const event of events) {
         counts[event._id] = await checkEventRegs(event);
       }
@@ -59,22 +79,22 @@ export default function Home() {
     }
   }, [events]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewEvent({ ...newEvent, [e.target.name]: e.target.value });
   };
 
-  const handleImageFileChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewEvent({ ...newEvent, event_image: reader.result });
+        setNewEvent({ ...newEvent, event_image: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setButtonLoading(true);
     try {
@@ -101,10 +121,12 @@ export default function Home() {
     }
   };
 
-  const handleEdit = async (id) => {
+  const handleEdit = async (id: string) => {
     setButtonLoading(true);
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+
+      if (!selectedEvent) return;
 
       // Create a copy of the event without the _id field
       const { _id, ...updateData } = selectedEvent;
@@ -134,7 +156,7 @@ export default function Home() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     setButtonLoading(true);
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
@@ -143,7 +165,8 @@ export default function Home() {
           Authorization: `Bearer ${API_KEY}`,
         },
       });
-      await fetchEvents();
+
+      // Update events state after deletion
       setEvents(events.filter((event) => event._id !== id));
     } catch (error) {
       console.log("Error deleting event:", error);
@@ -153,7 +176,9 @@ export default function Home() {
     }
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     if (e.target.name === "date") {
       setSearchDate(e.target.value);
     } else if (e.target.name === "location") {
@@ -169,7 +194,7 @@ export default function Home() {
     }
   };
 
-  const checkEventRegs = async (event) => {
+  const checkEventRegs = async (event: any) => {
     try {
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
       const response = await axios.get(
@@ -243,302 +268,529 @@ export default function Home() {
     return csvData;
   };
 
-  return (
-    <div className="min-h-screen bg-[#0A0D14] text-white p-4">
-      <div className="pb-35">
-        <Navbar name="Event Management" />
-      </div>
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "upcoming":
+        return "bg-blue-500";
+      case "ongoing":
+        return "bg-green-500";
+      case "completed":
+        return "bg-purple-500";
+      case "cancelled":
+        return "bg-red-500";
+      case "rescheduled":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
-      <h2 className="text-2xl font-semibold mb-4 tracking-wide">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0D14] to-[#111827] text-white p-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="pb-25"
+      >
+        <Navbar name="Event Management" />
+      </motion.div>
+
+      {/* <motion.h2
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="text-3xl font-bold mb-6 tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600"
+      >
         UPCOMING EVENTS
-      </h2>
+      </motion.h2> */}
+
+      {/* Filters Toggle */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="mb-4 "
+      >
+        <button
+          onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+        >
+          <FiFilter className="inline" />
+          <span>{isFiltersVisible ? "Hide Filters" : "Show Filters"}</span>
+        </button>
+      </motion.div>
 
       {/* Filters - Search */}
-      <div className="flex justify-between flex-wrap gap-2 bg-white/10 p-4 rounded-xl mb-6 backdrop-blur">
-        <div className="flex flex-wrap gap-4 items-end">
-          {/* Date */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Date</label>
-            <input
-              type="date"
-              name="date"
-              value={searchDate}
-              onChange={handleSearchChange}
-              className="bg-white/20 text-white p-2 rounded-md backdrop-blur-lg border border-white/30 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40"
-            />
-          </div>
+      <AnimatePresence>
+        {isFiltersVisible && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <motion.div className="flex justify-between flex-wrap gap-4 bg-white/5 p-6 rounded-xl mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+              <div className="flex flex-wrap gap-4 items-end">
+                {/* Date */}
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineCalendar className="text-blue-400" />
+                    <span>Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={searchDate}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                  />
+                </div>
 
-          {/* Location */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Location</label>
-            <select
-              name="location"
-              value={searchLocation}
-              onChange={handleSearchChange}
-              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
-            >
-              <option className="bg-gray-700 text-white">All</option>
-              <option className="bg-gray-700 text-white">General</option>
-              <option className="bg-gray-700 text-white">FOC</option>
-              <option className="bg-gray-700 text-white">FOB</option>
-              <option className="bg-gray-700 text-white">FOE</option>
-              <option className="bg-gray-700 text-white">Auditorium</option>
-              <option className="bg-gray-700 text-white">Ground</option>
-              <option className="bg-gray-700 text-white">Entrance</option>
-              <option className="bg-gray-700 text-white">Edge</option>
-              <option className="bg-gray-700 text-white">Finagle</option>
-            </select>
-          </div>
+                {/* Location */}
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineLocationMarker className="text-blue-400" />
+                    <span>Location</span>
+                  </label>
+                  <select
+                    name="location"
+                    value={searchLocation}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                  >
+                    <option className="bg-gray-800 text-white">All</option>
+                    <option className="bg-gray-800 text-white">General</option>
+                    <option className="bg-gray-800 text-white">FOC</option>
+                    <option className="bg-gray-800 text-white">FOB</option>
+                    <option className="bg-gray-800 text-white">FOE</option>
+                    <option className="bg-gray-800 text-white">
+                      Auditorium
+                    </option>
+                    <option className="bg-gray-800 text-white">Ground</option>
+                    <option className="bg-gray-800 text-white">Entrance</option>
+                    <option className="bg-gray-800 text-white">Edge</option>
+                    <option className="bg-gray-800 text-white">Finagle</option>
+                  </select>
+                </div>
 
-          {/* Event Type */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Event Type</label>
-            <select
-              name="eventType"
-              value={searchEventType}
-              onChange={handleSearchChange}
-              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
-            >
-              <option className="bg-gray-700 text-white">All</option>
-              <option className="bg-gray-700 text-white">
-                Event Held by a Club
-              </option>
-              <option className="bg-gray-700 text-white">
-                Event Held by a Society
-              </option>
-              <option className="bg-gray-700 text-white">A Stall</option>
-            </select>
-          </div>
+                {/* Event Type */}
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineTag className="text-blue-400" />
+                    <span>Event Type</span>
+                  </label>
+                  <select
+                    name="eventType"
+                    value={searchEventType}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                  >
+                    <option className="bg-gray-800 text-white">All</option>
+                    <option className="bg-gray-800 text-white">
+                      Event Held by a Club
+                    </option>
+                    <option className="bg-gray-800 text-white">
+                      Event Held by a Society
+                    </option>
+                    <option className="bg-gray-800 text-white">A Stall</option>
+                  </select>
+                </div>
 
-          {/* Society */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Society</label>
-            <select
-              name="society"
-              value={searchSociety}
-              onChange={handleSearchChange}
-              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
-            >
-              <option className="bg-gray-700 text-white">All</option>
-              <option className="bg-gray-700 text-white">FOSS</option>
-              <option className="bg-gray-700 text-white">IEEE</option>
-              <option className="bg-gray-700 text-white">NSBM</option>
-              <option className="bg-gray-700 text-white">Rotaract</option>
-              <option className="bg-gray-700 text-white">Leo Club</option>
-              <option className="bg-gray-700 text-white">AIESEC</option>
-            </select>
-          </div>
+                {/* Society */}
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineUserGroup className="text-blue-400" />
+                    <span>Society</span>
+                  </label>
+                  <select
+                    name="society"
+                    value={searchSociety}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                  >
+                    <option className="bg-gray-800 text-white">All</option>
+                    <option className="bg-gray-800 text-white">FOSS</option>
+                    <option className="bg-gray-800 text-white">IEEE</option>
+                    <option className="bg-gray-800 text-white">NSBM</option>
+                    <option className="bg-gray-800 text-white">Rotaract</option>
+                    <option className="bg-gray-800 text-white">Leo Club</option>
+                    <option className="bg-gray-800 text-white">AIESEC</option>
+                  </select>
+                </div>
 
-          {/* Status */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Status</label>
-            <select
-              name="status"
-              value={searchStatus}
-              onChange={handleSearchChange}
-              className="bg-gray-700 text-white p-2 rounded-md appearance-none"
-            >
-              <option className="bg-gray-700 text-white">All</option>
-              <option className="bg-gray-700 text-white">Upcoming</option>
-              <option className="bg-gray-700 text-white">Ongoing</option>
-              <option className="bg-gray-700 text-white">Completed</option>
-              <option className="bg-gray-700 text-white">Cancelled</option>
-              <option className="bg-gray-700 text-white">Rescheduled</option>
-            </select>
-          </div>
+                {/* Status */}
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineStatusOnline className="text-blue-400" />
+                    <span>Status</span>
+                  </label>
+                  <select
+                    name="status"
+                    value={searchStatus}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                  >
+                    <option className="bg-gray-800 text-white">All</option>
+                    <option className="bg-gray-800 text-white">Upcoming</option>
+                    <option className="bg-gray-800 text-white">Ongoing</option>
+                    <option className="bg-gray-800 text-white">
+                      Completed
+                    </option>
+                    <option className="bg-gray-800 text-white">
+                      Cancelled
+                    </option>
+                    <option className="bg-gray-800 text-white">
+                      Rescheduled
+                    </option>
+                  </select>
+                </div>
 
-          {/* Name */}
-          <div className="flex flex-col min-w-[150px]">
-            <label className="text-white mb-1">Name</label>
-            <Input
-              type="text"
-              name="name"
-              value={searchName}
-              onChange={handleSearchChange}
-              placeholder="Search From Name"
-            />
-          </div>
-        </div>
+                {/* Name */}
+                <div className="flex flex-col min-w-[200px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <FiSearch className="text-blue-400" />
+                    <span>Name</span>
+                  </label>
+                  <Input
+                    type="text"
+                    name="name"
+                    value={searchName}
+                    onChange={handleSearchChange}
+                    placeholder="Search From Name"
+                    className="bg-white/10 text-white border-white/20 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
 
-        {/* Clear Filters Button */}
-        <button
-          className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 h-fit self-end"
-          onClick={clearFilters}
-        >
-          Clear Filters
-        </button>
-      </div>
+              {/* Clear Filters Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-4 py-2 rounded-lg hover:from-gray-800 hover:to-gray-950 transition-all h-fit self-end flex items-center gap-2 shadow-md"
+                onClick={clearFilters}
+              >
+                <span>Clear Filters</span>
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Filters - Export */}
-      <div className="flex justify-between flex-wrap gap-2 bg-white/10 p-4 rounded-xl mb-6 backdrop-blur">
-        {/* Other filters can be added here */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="flex justify-between flex-wrap gap-2 bg-white/5 p-4 rounded-xl mb-6 backdrop-blur border border-white/10 shadow-lg"
+      >
+        <div className="text-sm text-gray-300">
+          {filteredEvents.length} events found
+        </div>
         <CSVLink
           data={exportData()}
           filename="events.csv"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 h-fit self-end"
+          className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-5 py-2 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all flex items-center gap-2 shadow-md"
         >
-          EXPORT
+          <FiDownload />
+          <span>EXPORT</span>
         </CSVLink>
-      </div>
+      </motion.div>
 
       {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          <div className="col-span-full flex justify-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+          <div className="col-span-full flex justify-center items-center py-20">
+            <div className="relative w-20 h-20">
+              <div className="w-20 h-20 border-4 border-blue-400 border-opacity-20 rounded-full"></div>
+              <div className="w-20 h-20 border-4 border-transparent border-t-blue-500 rounded-full animate-spin absolute top-0 left-0"></div>
+            </div>
           </div>
         ) : (
-          filteredEvents.map((event, index) => (
-            <div
-              key={index}
-              className="bg-white/10 rounded-2xl backdrop-blur p-4 shadow-lg flex flex-col items-center"
-            >
-              <img
-                src={event.event_image}
-                className="rounded-xl w-70 h-40 object-cover"
-                alt="Event"
-              />
+          <AnimatePresence>
+            {filteredEvents.map((event, index) => (
+              <motion.div
+                key={event._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 
-              <h3 className="mt-3 text-xl font-semibold">{event.event_name}</h3>
-              <div className="text-sm mt-2 space-y-1 text-gray-200">
-                <p>Date: {event.event_date}</p>
-                <p>Time: {event.event_time}</p>
-                <p>Location: {event.event_venue}</p>
-                <p>Type: {event.event_type || "Unknown"}</p>
-                <p>Held by: {event.event_held_by || "Unknown"}</p>
-                <p>Status: {event.event_status || "Unknown"}</p>
-                <p>
-                  Registrations: {registrationCounts[event._id] || 0}/
-                  {event.event_tickets || "unlimited"}
-                </p>
-              </div>
-              <div className="mt-4 flex gap-3">
-                <button
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-md"
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  EDIT
-                </button>
-                <button
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
-                  onClick={() => handleDelete(event._id)}
-                >
-                  {buttonLoading ? (
-                    <div className="w-4 h-4 border-2 border-white border-dashed rounded-full animate-spin"></div>
-                  ) : (
-                    "DELETE"
-                  )}
-                </button>
-              </div>
-            </div>
-          ))
+                {event.event_image && (
+                  <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden">
+                    <Image
+                      src={event.event_image}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      alt={event.event_name}
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute bottom-0 right-0 p-2">
+                      <span
+                        className={`text-xs font-medium py-1 px-3 rounded-full ${getStatusColor(event.event_status)}`}
+                      >
+                        {event.event_status || "Unknown"}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <h3 className="text-2xl font-bold mb-2 text-white">
+                  {event.event_name}
+                </h3>
+
+                <div className="text-sm space-y-2 text-gray-300 flex-grow">
+                  <p className="flex items-center gap-2">
+                    <HiOutlineCalendar className="text-blue-400" />
+                    <span>{event.event_date}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineClock className="text-blue-400" />
+                    <span>{event.event_time}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineLocationMarker className="text-blue-400" />
+                    <span>{event.event_venue}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineTag className="text-blue-400" />
+                    <span>{event.event_type || "Unknown"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineUserGroup className="text-blue-400" />
+                    <span>{event.event_held_by || "Unknown"}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineStatusOnline className="text-blue-400" />
+                    <span>
+                      Registrations: {registrationCounts[event._id] || 0}/
+                      {event.event_tickets || "unlimited"}
+                    </span>
+                  </p>
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <FiEdit />
+                    <span>EDIT</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                    onClick={() => handleDelete(event._id)}
+                  >
+                    {buttonLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <FiTrash2 />
+                        <span>DELETE</span>
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
-      {/* Edit Modal */}
-      {selectedEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-96 text-black">
-            <h2 className="text-2xl mb-4 font-semibold text-center">
-              Edit Event
-            </h2>
-            <input
-              type="text"
-              value={selectedEvent.event_name}
-              onChange={(e) =>
-                setSelectedEvent({
-                  ...selectedEvent,
-                  event_name: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded mb-2"
-              placeholder="Event Name"
-            />
-            <input
-              type="date"
-              value={selectedEvent.event_date}
-              onChange={(e) =>
-                setSelectedEvent({
-                  ...selectedEvent,
-                  event_date: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded mb-2"
-            />
-            <input
-              type="time"
-              value={selectedEvent.event_time}
-              onChange={(e) =>
-                setSelectedEvent({
-                  ...selectedEvent,
-                  event_time: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded mb-2"
-            />
-            <input
-              type="text"
-              value={selectedEvent.event_venue}
-              onChange={(e) =>
-                setSelectedEvent({
-                  ...selectedEvent,
-                  event_venue: e.target.value,
-                })
-              }
-              className="w-full p-2 border rounded mb-2"
-              placeholder="Venue"
-            />
-            {/* Status dropdown */}
-            <div className="mb-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event Status
-              </label>
-              <select
-                value={selectedEvent.event_status || "Upcoming"}
-                onChange={(e) =>
-                  setSelectedEvent({
-                    ...selectedEvent,
-                    event_status: e.target.value,
-                  })
-                }
-                className="w-full p-2 border rounded"
-              >
-                <option>Upcoming</option>
-                <option>Ongoing</option>
-                <option>Completed</option>
-                <option>Cancelled</option>
-                <option>Rescheduled</option>
-              </select>
-            </div>
-            {selectedEvent.event_image && (
-              <img
-                src={selectedEvent.event_image}
-                alt="Event"
-                className="mt-4 w-full h-40 object-cover rounded-lg"
-              />
-            )}
-            <button
-              className="bg-yellow-500 text-white p-2 mt-4 rounded hover:bg-yellow-600 w-full"
-              onClick={() => {
-                console.log(selectedEvent._id);
-                handleEdit(selectedEvent._id);
-              }}
-            >
-              {buttonLoading ? (
-                <div className="w-4 h-4 border-2 border-white border-dashed rounded-full animate-spin mx-auto"></div>
-              ) : (
-                "Save Changes"
-              )}
-            </button>
-            <button
-              className="bg-gray-600 text-white p-2 mt-2 rounded hover:bg-gray-700 w-full"
-              onClick={() => setSelectedEvent(null)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+      {/* No events found message */}
+      {!loading && filteredEvents.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-20 text-gray-400"
+        >
+          <p className="text-2xl font-light">
+            No events found matching your filters
+          </p>
+          <button
+            onClick={clearFilters}
+            className="mt-4 text-blue-400 hover:text-blue-300 underline"
+          >
+            Clear all filters
+          </button>
+        </motion.div>
       )}
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-white border border-white/10"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                  Edit Event
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-gray-400 hover:text-white text-xl"
+                >
+                  ✕
+                </motion.button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Event Name
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedEvent.event_name}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_name: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Event Name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedEvent.event_date}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_date: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={selectedEvent.event_time}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_time: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Venue
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedEvent.event_venue}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_venue: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Venue"
+                  />
+                </div>
+
+                {/* Status dropdown */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Event Status
+                  </label>
+                  <select
+                    value={selectedEvent.event_status || "Upcoming"}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_status: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
+                  >
+                    <option>Upcoming</option>
+                    <option>Ongoing</option>
+                    <option>Completed</option>
+                    <option>Cancelled</option>
+                    <option>Rescheduled</option>
+                  </select>
+                </div>
+              </div>
+
+              {selectedEvent.event_image && (
+                <div className="mt-6 relative rounded-lg overflow-hidden h-48">
+                  <Image
+                    src={selectedEvent.event_image}
+                    alt="Event"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="mt-6 space-y-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-3 rounded-lg w-full font-medium shadow-lg flex items-center justify-center gap-2"
+                  onClick={() => handleEdit(selectedEvent._id)}
+                >
+                  {buttonLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  ) : (
+                    <>
+                      <FiEdit />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg w-full font-medium transition-colors"
+                  onClick={() => setSelectedEvent(null)}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
