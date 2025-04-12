@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import fetcher from "@/components/services/fetcher";
 import axios from "axios";
 import SERVER_ADDRESS from "@/config";
+import { Input } from "@/components/ui/input";
 import Navbar from "@/components/navbar";
 
 export default function EventRequestsPage() {
@@ -13,6 +14,13 @@ export default function EventRequestsPage() {
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [processingIds, setProcessingIds] = useState<string[]>([]);
   const [savingTime, setSavingTime] = useState(false);
+
+  // Filter states
+  const [searchDate, setSearchDate] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchEventType, setSearchEventType] = useState("");
+  const [searchSociety, setSearchSociety] = useState("");
 
   useEffect(() => {
     async function fetchRequests() {
@@ -45,12 +53,6 @@ export default function EventRequestsPage() {
       );
 
       const requestData = response.data;
-      // console.log(requestData);
-      // if (!requestData.event_name || !requestData.selectedDate) {
-      //   console.log(
-      //     "Missing essential event data. Skipping malformed request.",
-      //   );
-      // }
 
       // Prepare the data for storing in the events collection
       const eventData = {
@@ -155,6 +157,64 @@ export default function EventRequestsPage() {
     setShowTimeModal(true);
   };
 
+  // Handle search and filter changes
+  const handleSearchChange = (e) => {
+    if (e.target.name === "date") {
+      setSearchDate(e.target.value);
+    } else if (e.target.name === "location") {
+      setSearchLocation(e.target.value);
+    } else if (e.target.name === "name") {
+      setSearchName(e.target.value);
+    } else if (e.target.name === "eventType") {
+      setSearchEventType(e.target.value);
+    } else if (e.target.name === "society") {
+      setSearchSociety(e.target.value);
+    }
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchDate("");
+    setSearchLocation("");
+    setSearchName("");
+    setSearchEventType("");
+    setSearchSociety("");
+  };
+
+  // Filter requests based on search criteria
+  const filteredRequests = requests.filter((request) => {
+    const dateMatch =
+      searchDate === "" ||
+      (request.selectedDate &&
+        new Date(request.selectedDate).toISOString().split("T")[0] ===
+          searchDate);
+
+    const locationMatch =
+      searchLocation === "" ||
+      searchLocation === "All" ||
+      (request.location &&
+        new RegExp(searchLocation, "i").test(request.location));
+
+    const nameMatch =
+      searchName === "" ||
+      (request.eventName &&
+        request.eventName.toLowerCase().includes(searchName.toLowerCase()));
+
+    const eventTypeMatch =
+      searchEventType === "" ||
+      searchEventType === "All" ||
+      request.eventType === searchEventType;
+
+    const societyMatch =
+      searchSociety === "" ||
+      searchSociety === "All" ||
+      request.societyName === searchSociety;
+
+    return (
+      dateMatch && locationMatch && nameMatch && eventTypeMatch && societyMatch
+    );
+  });
+
   return (
     <div className="min-h-screen bg-[#0A0D14] text-white p-4">
       <Navbar name="Event Requests Management" />
@@ -162,17 +222,115 @@ export default function EventRequestsPage() {
       <div className="container mx-auto py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Event Requests</h1>
 
+        {/* Filters */}
+        <div className="flex justify-between flex-wrap gap-2 bg-white/10 p-4 rounded-xl mb-6 backdrop-blur">
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Date Filter */}
+            <div className="flex flex-col min-w-[150px]">
+              <label className="text-white mb-1">Date</label>
+              <input
+                type="date"
+                name="date"
+                value={searchDate}
+                onChange={handleSearchChange}
+                className="bg-white/20 text-white p-2 rounded-md backdrop-blur-lg border border-white/30 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40"
+              />
+            </div>
+
+            {/* Location Filter */}
+            <div className="flex flex-col min-w-[150px]">
+              <label className="text-white mb-1">Location</label>
+              <select
+                name="location"
+                value={searchLocation}
+                onChange={handleSearchChange}
+                className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+              >
+                <option className="bg-gray-700 text-white">All</option>
+                <option className="bg-gray-700 text-white">General</option>
+                <option className="bg-gray-700 text-white">FOC</option>
+                <option className="bg-gray-700 text-white">FOB</option>
+                <option className="bg-gray-700 text-white">FOE</option>
+                <option className="bg-gray-700 text-white">Auditorium</option>
+                <option className="bg-gray-700 text-white">Ground</option>
+                <option className="bg-gray-700 text-white">Entrance</option>
+                <option className="bg-gray-700 text-white">Edge</option>
+                <option className="bg-gray-700 text-white">Finagle</option>
+              </select>
+            </div>
+
+            {/* Event Type Filter */}
+            <div className="flex flex-col min-w-[150px]">
+              <label className="text-white mb-1">Event Type</label>
+              <select
+                name="eventType"
+                value={searchEventType}
+                onChange={handleSearchChange}
+                className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+              >
+                <option className="bg-gray-700 text-white">All</option>
+                <option className="bg-gray-700 text-white">
+                  Event Held by a Club
+                </option>
+                <option className="bg-gray-700 text-white">
+                  Event Held by a Society
+                </option>
+                <option className="bg-gray-700 text-white">A Stall</option>
+              </select>
+            </div>
+
+            {/* Society Filter */}
+            <div className="flex flex-col min-w-[150px]">
+              <label className="text-white mb-1">Society</label>
+              <select
+                name="society"
+                value={searchSociety}
+                onChange={handleSearchChange}
+                className="bg-gray-700 text-white p-2 rounded-md appearance-none"
+              >
+                <option className="bg-gray-700 text-white">All</option>
+                <option className="bg-gray-700 text-white">FOSS</option>
+                <option className="bg-gray-700 text-white">IEEE</option>
+                <option className="bg-gray-700 text-white">NSBM</option>
+                <option className="bg-gray-700 text-white">Rotaract</option>
+                <option className="bg-gray-700 text-white">Leo Club</option>
+                <option className="bg-gray-700 text-white">AIESEC</option>
+              </select>
+            </div>
+
+            {/* Name Filter */}
+            <div className="flex flex-col min-w-[150px]">
+              <label className="text-white mb-1">Name</label>
+              <Input
+                type="text"
+                name="name"
+                value={searchName}
+                onChange={handleSearchChange}
+                placeholder="Search From Name"
+              />
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <button
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 h-fit self-end"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </button>
+        </div>
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
           </div>
-        ) : requests.length === 0 ? (
+        ) : filteredRequests.length === 0 ? (
           <div className="text-center py-12 bg-white/5 rounded-xl backdrop-blur-sm">
-            <p className="text-xl text-gray-400">No pending event requests</p>
+            <p className="text-xl text-gray-400">No matching event requests</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {requests.map((request) => (
+            {filteredRequests.map((request) => (
               <div
                 key={request._id}
                 className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col"
@@ -253,23 +411,21 @@ export default function EventRequestsPage() {
                     Approve
                   </button>
 
-                  <button
-                    onClick={() =>
-                      //Download the file in request.file
-                      {
+                  {request.file && (
+                    <button
+                      onClick={() => {
                         const link = document.createElement("a");
                         link.href = `data:${request.file.type};base64,${request.file.data}`;
                         link.download = request.file.name;
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
-                      }
-                    }
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm flex justify-center items-center"
-                  >
-                    {" "}
-                    Download Document{" "}
-                  </button>
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm flex justify-center items-center"
+                    >
+                      Download Document
+                    </button>
+                  )}
 
                   <button
                     onClick={() => handleDelete(request._id)}
