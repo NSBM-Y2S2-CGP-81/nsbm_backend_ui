@@ -68,6 +68,7 @@ export default function EventRequestsPage() {
         event_type: requestData.eventType || "",
         event_held_by: requestData.societyName || "",
         event_status: "upcoming",
+        event_link: requestData.registrationLink || "",
       };
 
       // Store the data in the events collection
@@ -385,6 +386,12 @@ export default function EventRequestsPage() {
                         Club/Society Name:{" "}
                       </span>
                       {request.societyName}
+                    </p>
+                    <p>
+                      <span className="font-medium text-gray-200">
+                        Registration Link:{" "}
+                      </span>
+                      {request.registrationLink}
                     </p>
                   </div>
 
