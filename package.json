@@ -27,6 +27,8 @@
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^9.16.0",
+    "react-native-paper": "^5.13.4",
+    "react-native-vector-icons": "^10.2.0",
     "recharts": "^2.15.1",
     "shadcn": "^2.4.0-canary.14",
     "sonner": "^2.0.1",

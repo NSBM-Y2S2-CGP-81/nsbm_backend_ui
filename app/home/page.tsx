@@ -120,7 +120,15 @@ export default function EventManagementPage() {
             buttonText="->"
             onClick={() => (window.location.href = "/news")}
           />
-        </motion.div>
+           </motion.div>
+        <motion.div variants={item}>
+          <GlassmorphicCard
+            title="Lecture Schedule"
+            text="Check & Edit lecture Details"
+            buttonText="->"
+            onClick={() => (window.location.href = "/lecture_main")}
+            />
+            </motion.div>
         <motion.div variants={item}>
           <GlassmorphicCard
             title="MongoDB Interface"

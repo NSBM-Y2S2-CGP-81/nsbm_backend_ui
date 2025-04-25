@@ -1,0 +1,419 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { FiFilter, FiDownload, FiEdit, FiTrash2, FiSearch, FiPlus } from "react-icons/fi";
+import { HiOutlineCalendar, HiOutlineLocationMarker, HiOutlineClock, HiOutlineTag, HiOutlineUserGroup, HiOutlineStatusOnline } from "react-icons/hi";
+import { CSVLink } from "react-csv";
+import { motion, AnimatePresence } from "framer-motion";
+import Navbar from "@/components/Navbar";
+import Input from "@/components/ui/input";
+import Image from "next/image";
+
+const LectureManagement = ({ lectures, loading, exportData, registrationCounts, handleSearchChange, clearFilters, handleDelete, setSelectedLecture, searchName, searchDate, searchLocation, searchLectureType, searchFaculty, searchStatus, isFiltersVisible, setIsFiltersVisible }) => {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0D14] to-[#111827] text-white p-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="pb-25"
+      >
+        <Navbar name="Lecture Management" />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="mb-4 "
+      >
+        <button
+          onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+        >
+          <FiFilter className="inline" />
+          <span>{isFiltersVisible ? "Hide Filters" : "Show Filters"}</span>
+        </button>
+      </motion.div>
+
+      <AnimatePresence>
+        {isFiltersVisible && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <motion.div className="flex justify-between flex-wrap gap-4 bg-white/5 p-6 rounded-xl mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+              <div className="flex flex-wrap gap-4 items-end">
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineCalendar className="text-blue-400" />
+                    <span>Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={searchDate}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineLocationMarker className="text-blue-400" />
+                    <span>Venue</span>
+                  </label>
+                  <Input
+                    type="text"
+                    name="location"
+                    value={searchLocation}
+                    onChange={handleSearchChange}
+                    placeholder="e.g., FOC 204"
+                    className="bg-white/10 text-white border-white/20 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineTag className="text-blue-400" />
+                    <span>Lecture Type</span>
+                  </label>
+                  <select
+                    name="lectureType"
+                    value={searchLectureType}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option>All</option>
+                    <option>Lecture</option>
+                    <option>Tutorial</option>
+                    <option>Lab</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col min-w-[150px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <HiOutlineUserGroup className="text-blue-400" />
+                    <span>Faculty</span>
+                  </label>
+                  <select
+                    name="faculty"
+                    value={searchFaculty}
+                    onChange={handleSearchChange}
+                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option>All</option>
+                    <option>FOC</option>
+                    <option>FOB</option>
+                    <option>FOE</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col min-w-[200px]">
+                  <label className="text-gray-300 mb-2 flex items-center gap-1">
+                    <FiSearch className="text-blue-400" />
+                    <span>Lecture Name</span>
+                  </label>
+                  <Input
+                    type="text"
+                    name="name"
+                    value={searchName}
+                    onChange={handleSearchChange}
+                    placeholder="Search by title"
+                    className="bg-white/10 text-white border-white/20 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-4 py-2 rounded-lg hover:from-gray-800 hover:to-gray-950 h-fit self-end flex items-center gap-2 shadow-md"
+                onClick={clearFilters}
+              >
+                <span>Clear Filters</span>
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="flex justify-between flex-wrap gap-2 bg-white/5 p-4 rounded-xl mb-6 backdrop-blur border border-white/10 shadow-lg"
+      >
+        <div className="text-sm text-gray-300">{lectures.length} lectures found</div>
+        <div className="flex gap-2">
+          <CSVLink
+            data={exportData()}
+            filename="lectures.csv"
+            className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-5 py-2 rounded-lg hover:from-blue-700 hover:to-blue-900 flex items-center gap-2 shadow-md"
+          >
+            <FiDownload />
+            <span>EXPORT</span>
+          </CSVLink>
+          <button
+            onClick={() => setSelectedLecture(null)}
+            className="bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md"
+          >
+            <FiPlus />
+            <span>CREATE</span>
+          </button>
+        </div>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          <div className="col-span-full flex justify-center items-center py-20">
+            <div className="relative w-20 h-20">
+              <div className="w-20 h-20 border-4 border-blue-400 border-opacity-20 rounded-full"></div>
+              <div className="w-20 h-20 border-4 border-transparent border-t-blue-500 rounded-full animate-spin absolute top-0 left-0"></div>
+            </div>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {lectures.map((lecture, index) => (
+              <motion.div
+                key={lecture._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 relative overflow-hidden group"
+              >
+                <h3 className="text-2xl font-bold mb-2 text-white">
+                  {lecture.title}
+                </h3>
+
+                <div className="text-sm space-y-2 text-gray-300 flex-grow">
+                  <p className="flex items-center gap-2">
+                    <HiOutlineCalendar className="text-blue-400" />
+                    <span>{lecture.date}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineClock className="text-blue-400" />
+                    <span>{lecture.time}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineLocationMarker className="text-blue-400" />
+                    <span>{lecture.venue}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineTag className="text-blue-400" />
+                    <span>{lecture.type}</span>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <HiOutlineUserGroup className="text-blue-400" />
+                    <span>{lecture.faculty}</span>
+                  </p>
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                    onClick={() => setSelectedLecture(lecture)}
+                  >
+                    <FiEdit />
+                    <span>EDIT</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-red-600 to-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                    onClick={() => handleDelete(lecture._id)}
+                  >
+                    <FiTrash2 />
+                    <span>DELETE</span>
+                  </motion.button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+      </div>
+    </div>
+  );
+};
+      {/* No lectures found message */}
+{!loading && filteredLectures.length === 0 && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center py-20 text-gray-400"
+    >
+      <p className="text-2xl font-light">
+        No lectures found matching your filters
+      </p>
+      <button
+        onClick={clearFilters}
+        className="mt-4 text-blue-400 hover:text-blue-300 underline"
+      >
+        Clear all filters
+      </button>
+    </motion.div>
+  )}
+  
+  {/* Edit Lecture Modal */}
+  <AnimatePresence>
+    {selectedLecture && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4"
+      >
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.9, y: 20 }}
+          transition={{ type: "spring", damping: 25 }}
+          className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-white border border-white/10"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              Edit Lecture
+            </h2>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setSelectedLecture(null)}
+              className="text-gray-400 hover:text-white text-xl"
+            >
+              ✕
+            </motion.button>
+          </div>
+  
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Lecture Title</label>
+              <input
+                type="text"
+                value={selectedLecture.lecture_title}
+                onChange={(e) =>
+                  setSelectedLecture({
+                    ...selectedLecture,
+                    lecture_title: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Lecture Title"
+              />
+            </div>
+  
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Date</label>
+              <input
+                type="date"
+                value={selectedLecture.lecture_date}
+                onChange={(e) =>
+                  setSelectedLecture({
+                    ...selectedLecture,
+                    lecture_date: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+  
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Time</label>
+              <input
+                type="time"
+                value={selectedLecture.lecture_time}
+                onChange={(e) =>
+                  setSelectedLecture({
+                    ...selectedLecture,
+                    lecture_time: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+  
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Venue</label>
+              <input
+                type="text"
+                value={selectedLecture.lecture_venue}
+                onChange={(e) =>
+                  setSelectedLecture({
+                    ...selectedLecture,
+                    lecture_venue: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Venue"
+              />
+            </div>
+  
+            {/* Status dropdown */}
+            <div>
+              <label className="block text-sm text-gray-400 mb-1">Lecture Status</label>
+              <select
+                value={selectedLecture.lecture_status || "Scheduled"}
+                onChange={(e) =>
+                  setSelectedLecture({
+                    ...selectedLecture,
+                    lecture_status: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
+              >
+                <option>Scheduled</option>
+                <option>Ongoing</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
+                <option>Rescheduled</option>
+              </select>
+            </div>
+          </div>
+  
+          {selectedLecture.lecture_image && (
+            <div className="mt-6 relative rounded-lg overflow-hidden h-48">
+              <Image
+                src={selectedLecture.lecture_image}
+                alt="Lecture"
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+  
+          <div className="mt-6 space-y-2">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-3 rounded-lg w-full font-medium shadow-lg flex items-center justify-center gap-2"
+              onClick={() => handleEdit(selectedLecture._id)}
+            >
+              {buttonLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+              ) : (
+                <>
+                  <FiEdit />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </motion.button>
+  
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg w-full font-medium transition-colors"
+              onClick={() => setSelectedLecture(null)}
+            >
+              Cancel
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+  
