@@ -19,8 +19,12 @@ import {
   FiTable,
   FiChevronLeft,
   FiChevronRight,
+  FiPlus,
+  FiFolder,
+  FiFilePlus,
+  FiX,
 } from "react-icons/fi";
-import { RiDatabaseLine } from "react-icons/ri";
+import { RiDatabaseLine, RiAddLine } from "react-icons/ri";
 import { HiOutlineDocumentText } from "react-icons/hi";
 
 export default function MongoDBInterface() {
@@ -37,7 +41,8 @@ export default function MongoDBInterface() {
   const [limit, setLimit] = useState(20);
   const [documentUpdating, setDocumentUpdating] = useState(false);
 
-  const collections = [
+  // New state variables for collection and document creation
+  const [collections, setCollections] = useState([
     "users",
     "students",
     "lecturers",
@@ -54,7 +59,13 @@ export default function MongoDBInterface() {
     "todays_pick",
     "news",
     "crowd_uplink",
-  ];
+  ]);
+  const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [creatingCollection, setCreatingCollection] = useState(false);
+  const [showNewDocumentModal, setShowNewDocumentModal] = useState(false);
+  const [newDocumentJson, setNewDocumentJson] = useState("{\n  \n}");
+  const [creatingDocument, setCreatingDocument] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -96,6 +107,7 @@ export default function MongoDBInterface() {
     setSearchQuery("");
     setSelectedDocument(null);
     setEditedDocument(null);
+    setShowNewDocumentModal(false);
   };
 
   const handleDocumentSelect = (doc) => {
@@ -192,6 +204,100 @@ export default function MongoDBInterface() {
       setEditedDocument(newDoc);
     } else {
       setEditedDocument({ ...editedDocument, [key]: value });
+    }
+  };
+
+  // Create new collection
+  const handleCreateCollection = async () => {
+    if (!newCollectionName || newCollectionName.trim() === "") {
+      setError("Collection name is required");
+      return;
+    }
+
+    setCreatingCollection(true);
+    setError(null);
+
+    try {
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+      if (!API_KEY) {
+        throw new Error("API key not found");
+      }
+
+      const response = await axios.post(
+        `${SERVER_ADDRESS}/data/create-collection`,
+        { name: newCollectionName },
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // Update collections list and select the new collection
+      setCollections([...collections, newCollectionName]);
+      setSelectedCollection(newCollectionName);
+      setShowNewCollectionModal(false);
+      setNewCollectionName("");
+
+      // Show success message
+      setError({
+        type: "success",
+        message: "Collection created successfully!",
+      });
+    } catch (err) {
+      console.error("Error creating collection:", err);
+      setError(
+        err.response?.data?.error ||
+          "Failed to create collection. Please try again.",
+      );
+    } finally {
+      setCreatingCollection(false);
+    }
+  };
+
+  // Create new document
+  const handleCreateDocument = async () => {
+    setCreatingDocument(true);
+    setError(null);
+
+    try {
+      // Validate JSON
+      let docData;
+      try {
+        docData = JSON.parse(newDocumentJson);
+      } catch (e) {
+        throw new Error("Invalid JSON format");
+      }
+
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+      if (!API_KEY) {
+        throw new Error("API key not found");
+      }
+
+      await axios.post(
+        `${SERVER_ADDRESS}/data/${selectedCollection}/create`,
+        docData,
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // Reset form and refresh documents
+      setShowNewDocumentModal(false);
+      setNewDocumentJson("{\n  \n}");
+      fetchDocuments();
+
+      // Show success message
+      setError({ type: "success", message: "Document created successfully!" });
+    } catch (err) {
+      console.error("Error creating document:", err);
+      setError(err.message || "Failed to create document. Please try again.");
+    } finally {
+      setCreatingDocument(false);
     }
   };
 
@@ -327,9 +433,20 @@ export default function MongoDBInterface() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-xl font-semibold mb-6 flex items-center text-indigo-300">
-            <FiDatabase className="mr-2 text-indigo-400" /> Collections
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-indigo-300 flex items-center">
+              <FiDatabase className="mr-2 text-indigo-400" /> Collections
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-indigo-600/50 border-indigo-500 hover:bg-indigo-700 text-white"
+              onClick={() => setShowNewCollectionModal(true)}
+            >
+              <FiPlus className="mr-1" /> New
+            </Button>
+          </div>
+
           <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
             {collections.map((collection) => (
               <motion.button
@@ -395,6 +512,12 @@ export default function MongoDBInterface() {
                   )}
                   {showJsonView ? "Table View" : "JSON View"}
                 </Button>
+                <Button
+                  onClick={() => setShowNewDocumentModal(true)}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <FiFilePlus /> ADD DOCUMENT
+                </Button>
                 <CSVLink
                   data={exportData()}
                   filename={`${selectedCollection}.csv`}
@@ -407,23 +530,33 @@ export default function MongoDBInterface() {
 
             {error && (
               <motion.div
-                className="bg-red-500/20 border border-red-500 p-4 rounded-lg mb-4 text-red-200 flex items-center"
+                className={`${
+                  error.type === "success"
+                    ? "bg-green-500/20 border border-green-500 text-green-200"
+                    : "bg-red-500/20 border border-red-500 text-red-200"
+                } p-4 rounded-lg mb-4 flex items-center`}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2 text-red-500"
+                  className={`h-5 w-5 mr-2 ${
+                    error.type === "success" ? "text-green-500" : "text-red-500"
+                  }`}
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
                   <path
                     fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    d={
+                      error.type === "success"
+                        ? "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        : "M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    }
                     clipRule="evenodd"
                   />
                 </svg>
-                {error}
+                {error.message || error}
               </motion.div>
             )}
 
@@ -711,6 +844,158 @@ export default function MongoDBInterface() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Create Collection Modal */}
+      <AnimatePresence>
+        {showNewCollectionModal && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNewCollectionModal(false)}
+            />
+            <motion.div
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 rounded-xl border border-indigo-500/30 shadow-xl p-6 z-50 w-full max-w-md"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 15 }}
+            >
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-bold text-indigo-300 flex items-center">
+                  <FiFolder className="mr-2 text-indigo-500" /> Create New
+                  Collection
+                </h2>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:bg-gray-800/70 hover:text-white"
+                  onClick={() => setShowNewCollectionModal(false)}
+                >
+                  <FiX size={20} />
+                </Button>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Collection Name:
+                </label>
+                <Input
+                  placeholder="Enter collection name"
+                  value={newCollectionName}
+                  onChange={(e) => setNewCollectionName(e.target.value)}
+                  className="bg-gray-800/80 border-gray-700 text-white focus:ring-indigo-600 focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  className="bg-gray-800/70 border-gray-700 hover:bg-gray-700 text-gray-300"
+                  onClick={() => {
+                    setShowNewCollectionModal(false);
+                    setNewCollectionName("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white"
+                  onClick={handleCreateCollection}
+                  disabled={creatingCollection}
+                >
+                  {creatingCollection ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Collection"
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Create Document Modal */}
+      <AnimatePresence>
+        {showNewDocumentModal && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowNewDocumentModal(false)}
+            />
+            <motion.div
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 rounded-xl border border-green-500/30 shadow-xl p-6 z-50 w-full max-w-2xl"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 15 }}
+            >
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-bold text-green-400 flex items-center">
+                  <FiFilePlus className="mr-2 text-green-500" /> New Document in{" "}
+                  {selectedCollection}
+                </h2>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:bg-gray-800/70 hover:text-white"
+                  onClick={() => setShowNewDocumentModal(false)}
+                >
+                  <FiX size={20} />
+                </Button>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Document JSON:
+                </label>
+                <textarea
+                  value={newDocumentJson}
+                  onChange={(e) => setNewDocumentJson(e.target.value)}
+                  className="w-full h-72 p-4 bg-gray-800/80 border border-gray-700 rounded-lg text-green-300 font-mono text-sm focus:ring-green-600 focus:border-green-500 resize-none"
+                  placeholder="Enter JSON document data"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  className="bg-gray-800/70 border-gray-700 hover:bg-gray-700 text-gray-300"
+                  onClick={() => {
+                    setShowNewDocumentModal(false);
+                    setNewDocumentJson("{\n  \n}");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                  onClick={handleCreateDocument}
+                  disabled={creatingDocument}
+                >
+                  {creatingDocument ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Document"
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
