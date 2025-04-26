@@ -24,19 +24,25 @@ export default function Home() {
           title="Administration"
           text="Admin Platform"
           buttonText="->"
-          onClick={() => (window.location.href = "/auth")}
+          onClick={() =>
+            (window.location.href = "/admin/admin_signin/admin_auth")
+          }
         />
         <GlassmorphicCard
           title="Club's MIC"
           text="MIC Platform for Event Management"
           buttonText="->"
-          onClick={() => (window.location.href = "/foc")}
+          onClick={() =>
+            (window.location.href = "/mic/a_mic_signin/mic_auth")
+          }
         />
         <GlassmorphicCard
-          title="Catering Partners"
+          title="UniFresh"
           text="UniFresh Platform for NSBM food service vendors"
           buttonText="->"
-          onClick={() => (window.location.href = "/foe")}
+          onClick={() =>
+            (window.location.href = "/unifresh/a_unifresh_sigin/unifresh_auth")
+          }
         />
       </div>
     </div>

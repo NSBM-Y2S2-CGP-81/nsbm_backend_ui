@@ -44,7 +44,7 @@ export default function Login() {
         // sessionStorage.setItem("NEXT_PUBLIC_SYS_API", data.access_token);
 
         // Redirect or update state after login
-        window.location.href = "/home"; // Change to your desired route
+        window.location.href = "/unifresh/features/unifresh_home"; // Change to your desired route
       } else {
         throw new Error("Access token not received.");
       }
@@ -69,7 +69,7 @@ export default function Login() {
               <h1 className="text-white text-3xl font-semibold">
                 Dashboard Login
               </h1>
-              <h2 className="text-white text-sm font-medium">Administrator</h2>
+              <h2 className="text-white text-sm font-medium">UniFresh</h2>
             </div>
             <div className="flex flex-col items-center justify-center w-full h-full">
               <div className="flex flex-col space-y-2 w-full max-w-md p-10">

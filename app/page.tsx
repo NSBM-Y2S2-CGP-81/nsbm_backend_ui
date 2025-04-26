@@ -6,7 +6,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push("/selection");
+    router.push("/a_selection");
   }, [router]);
 
   return <div></div>;

@@ -16,13 +16,13 @@ export default function Home() {
               title="Events"
               text="Upcoming Events"
               buttonText="->"
-              onClick={() => (window.location.href = "/events")}
+              onClick={() => (window.location.href = "/admin/features/event_management/events")}
             />
             <GlassmorphicCard
               title="Requests"
               text="Pending Request"
               buttonText="->"
-              onClick={() => (window.location.href = "/requests")}
+              onClick={() => (window.location.href = "/admin/features/event_management/requests")}
             />
           </div>
         </div>

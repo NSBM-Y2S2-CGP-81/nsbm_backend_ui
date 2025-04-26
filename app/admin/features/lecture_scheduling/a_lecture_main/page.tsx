@@ -16,25 +16,25 @@ export default function Home() {
               title="FOB"
               text="Faculty of Business"
               buttonText="->"
-              onClick={() => (window.location.href = "/fob")}
+              onClick={() => (window.location.href = "/admin/features/lecture_scheduling/fob")}
             />
             <GlassmorphicCard
               title="FOC"
               text="Faculty of Computing"
               buttonText="->"
-              onClick={() => (window.location.href = "/foc")}
+              onClick={() => (window.location.href = "/admin/features/lecture_scheduling/foc")}
             />
             <GlassmorphicCard
               title="FOE"
               text="Faculty Of Engineering"
               buttonText="->"
-              onClick={() => (window.location.href = "/foe")}
+              onClick={() => (window.location.href = "/admin/features/lecture_scheduling/foe" )}
             />
             <GlassmorphicCard
               title="FOS"
               text="Faculty Of Science"
               buttonText="->"
-              onClick={() => (window.location.href = "/fos")}
+              onClick={() => (window.location.href = "/admin/features/lecture_scheduling/fos")}
             />
           </div>
         </div>
