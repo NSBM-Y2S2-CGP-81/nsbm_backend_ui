@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { format } from "date-fns";
+import Navbar from "@/components/navbar";
 
 // Register chart elements
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -20,7 +21,6 @@ export default function MenuAnalytics({ menu = [], orders = [] }: MenuAnalyticsP
     { id: 4, name: "Fries", price: 669 },
   ];
 
-  // Updated order data with values in LKR
   const dummyOrders = [
     { id: 101, items: ["Cheese Burger", "Fries"], total: 1899, date: "2025-01-15" },
     { id: 102, items: ["Veggie Wrap", "Fries"], total: 2049, date: "2025-02-20" },
@@ -75,31 +75,58 @@ export default function MenuAnalytics({ menu = [], orders = [] }: MenuAnalyticsP
     ],
   };
 
-  // Correct total revenue calculation in LKR
-  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2);
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+  const formattedRevenue = `Rs. ${totalRevenue.toLocaleString('en-LK', { minimumFractionDigits: 2 })}`;
   const totalItemsSold = itemSales.reduce((sum, item) => sum + item.sold, 0);
   const mostPopularItem = itemSales.sort((a, b) => b.sold - a.sold)[0];
 
   return (
-    <div className="space-y-8 bg-[#0A0D14] text-white shadow-lg rounded-lg p-8">
-      <h2 className="text-2xl font-semibold text-white mb-8">Menu Analytics</h2>
+    <div className="space-y-12 bg-[#0A0D14] text-white shadow-lg rounded-xl p-10">
+      <Navbar name="Uni Fresh: Menu Analytics" />
 
-      {/* Time Period Selection */}
-      <div className="flex justify-center items-center mb-6">
-        <label className="font-semibold text-gray-300 mr-4">Select Time Period:</label>
+      <div className="mt-16 flex justify-center items-center mb-8">
+        <label className="font-semibold text-gray-300 text-lg mr-4">Filter by:</label>
         <select
           value={timePeriod}
           onChange={(e) => setTimePeriod(e.target.value)}
-          className="p-3 w-48 border-2 border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 bg-[#1A202C] text-white text-lg"
+          className="p-3 w-52 border-2 border-gray-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-[#1F2937] text-white text-lg"
         >
           <option value="week">Last Week</option>
-          <option value="month">Last Month</option>
+          <option value="month">This Month</option>
           <option value="year">This Year</option>
         </select>
       </div>
 
-      {/* Bar Chart - Smaller Size */}
-      <div className="mb-6 w-full max-w-4xl mx-auto h-80">
+      <div className="flex flex-wrap justify-center space-x-6 mb-12">
+        {/* Most Sold Item */}
+        <div className="bg-[#1A202C] p-8 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex flex-col items-center max-w-xs mb-6">
+          <h3 className="text-xl font-semibold mb-4 text-center">Most Sold Item</h3>
+          <p className="text-2xl font-bold text-yellow-500 text-center">{mostPopularItem.name}</p>
+          <p className="text-sm text-gray-300 mt-4 text-center">
+            This is the most sold item with a total of <strong>{mostPopularItem.sold}</strong> sold.
+          </p>
+        </div>
+
+        {/* Total Items Sold */}
+        <div className="bg-[#1A202C] p-8 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex flex-col items-center max-w-xs mb-6">
+          <h3 className="text-xl font-semibold mb-4 text-center">Total Items Sold</h3>
+          <p className="text-4xl font-bold text-blue-400">{totalItemsSold}</p>
+          <p className="text-sm text-gray-300 mt-4 text-center">
+            Total quantity of items sold during the selected period.
+          </p>
+        </div>
+
+        {/* Total Revenue */}
+        <div className="bg-[#1A202C] p-8 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex flex-col items-center max-w-xs mb-6">
+          <h3 className="text-xl font-semibold mb-4 text-center">Total Revenue</h3>
+          <p className="text-2xl font-bold text-green-400 text-center">{formattedRevenue}</p>
+          <p className="text-sm text-gray-300 mt-4 text-center">
+            Total revenue generated from sales during the selected period.
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full max-w-6xl mx-auto h-[500px] mt-12">
         <Bar
           data={data}
           options={{
@@ -108,14 +135,14 @@ export default function MenuAnalytics({ menu = [], orders = [] }: MenuAnalyticsP
             plugins: {
               title: {
                 display: true,
-                text: "Menu Sales Overview",
+                text: `Menu Sales Overview (${timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)})`,
                 font: {
-                  size: 22,
-                  weight: 'bold',
+                  size: 24,
+                  weight: "bold",
                 },
-                color: '#fff',
+                color: "#fff",
                 padding: {
-                  bottom: 20,
+                  bottom: 30,
                 },
               },
               tooltip: {
@@ -125,51 +152,36 @@ export default function MenuAnalytics({ menu = [], orders = [] }: MenuAnalyticsP
                   },
                 },
               },
+              legend: {
+                display: false,
+              },
             },
             scales: {
               x: {
                 grid: {
-                  display: true,
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  borderWidth: 1,
+                  color: "rgba(255, 255, 255, 0.1)",
                 },
                 ticks: {
-                  color: '#fff',
+                  color: "#fff",
+                  font: {
+                    size: 13,
+                  },
                 },
               },
               y: {
                 grid: {
-                  borderDash: [5, 5],
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  borderWidth: 1,
+                  borderDash: [8, 4],
+                  color: "rgba(255, 255, 255, 0.15)",
                 },
                 ticks: {
                   beginAtZero: true,
                   stepSize: 1,
-                  color: '#fff',
+                  color: "#fff",
                 },
               },
             },
           }}
         />
-      </div>
-
-      {/* Summary Section */}
-      <div className="space-y-4 bg-[#1A202C] p-6 rounded-lg shadow-md">
-        <div className="flex justify-between text-gray-300">
-          <p className="font-semibold text-lg text-white">Total Revenue:</p>
-          <p className="text-xl font-bold text-green-400">LKR {totalRevenue}</p>
-        </div>
-        <div className="flex justify-between text-gray-300">
-          <p className="font-semibold text-lg text-white">Total Items Sold:</p>
-          <p className="text-xl font-bold text-blue-400">{totalItemsSold}</p>
-        </div>
-        <div className="flex justify-between text-gray-300">
-          <p className="font-semibold text-lg text-white">Most Popular Item:</p>
-          <p className="text-xl font-bold text-orange-400">{mostPopularItem.name}</p>
-        </div>
       </div>
     </div>
   );

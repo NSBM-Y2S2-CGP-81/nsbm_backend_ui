@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { format } from "date-fns";
+import Navbar from "@/components/navbar";
 
 // Register chart elements
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -17,7 +18,7 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
     { id: 102, items: ["Veggie Wrap", "Fries"], total: 749, date: "2025-02-20" },
     { id: 103, items: ["Cheese Burger", "Chicken Sandwich"], total: 1248, date: "2025-03-10" },
     { id: 104, items: ["Fries"], total: 2.99, date: "2025-04-05" },
-    { id: 105, items: ["Chicken Sandwich", "Cheese Burger"], total:1128, date: "2025-04-10" },
+    { id: 105, items: ["Chicken Sandwich", "Cheese Burger"], total: 1128, date: "2025-04-10" },
   ];
 
   const ordersData = orders.length > 0 ? orders : dummyOrders;
@@ -35,6 +36,8 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
         return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
       } else if (timePeriod === "year") {
         return orderDate.getFullYear() === now.getFullYear();
+      } else if (timePeriod === "today") {
+        return orderDate.toDateString() === now.toDateString();
       }
       return true;
     });
@@ -46,7 +49,7 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
 
   const salesData = filteredOrders.reduce((acc, order) => {
     const orderDate = new Date(order.date);
-    let label = '';
+    let label = "";
 
     if (timePeriod === "week") {
       label = `Week ${Math.floor(orderDate.getDate() / 7) + 1}`;
@@ -54,6 +57,8 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
       label = format(orderDate, "MMM yyyy");
     } else if (timePeriod === "year") {
       label = format(orderDate, "yyyy");
+    } else if (timePeriod === "today") {
+      label = "Today";
     }
 
     if (!acc[label]) {
@@ -71,34 +76,61 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
       {
         label: "Sales Revenue",
         data: Object.values(salesData),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        backgroundColor: "rgba(54, 162, 235, 0.7)", // Updated for smoother look
         borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 2,
-        barThickness: 20,
+        barThickness: 30, // Thicker bars for better visibility
       },
     ],
   };
 
-  return (
-    <div className="space-y-8 bg-[#0A0D14] text-white shadow-lg rounded-lg p-8">
-      <h2 className="text-4xl font-bold text-center mb-8 text-white">Sales Analysis</h2>
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+  const totalOrders = filteredOrders.length;
 
-      {/* Time Period Selection */}
-      <div className="flex justify-center items-center mb-6">
-        <label className="font-semibold text-gray-200 text-lg mr-4">Select Time Period:</label>
+  return (
+    <div className="space-y-12 bg-[#0A0D14] text-white shadow-lg rounded-xl p-10">
+      <Navbar name="Uni Fresh: Profile [Vendor]" />
+
+      {/* Added margin-top to ensure the filter is clearly visible */}
+      <div className="mt-16 flex justify-center items-center mb-8">
+        <label className="font-semibold text-gray-300 text-lg mr-4">Filter by:</label>
         <select
           value={timePeriod}
           onChange={(e) => setTimePeriod(e.target.value)}
-          className="p-3 w-48 border-2 border-gray-600 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all bg-[#1A202C] text-white text-lg"
+          className="p-3 w-52 border-2 border-gray-700 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-[#1F2937] text-white text-lg"
         >
           <option value="week">Last Week</option>
           <option value="month">This Month</option>
           <option value="year">This Year</option>
+          <option value="today">Today</option>
         </select>
       </div>
 
-      {/* Sales Chart - Smaller Height */}
-      <div className="mb-6 w-full max-w-4xl mx-auto h-80">
+      {/* Summary Cards */}
+      <div className="flex justify-center space-x-6 mb-12">
+        {/* Total Revenue */}
+        <div className="bg-[#1A202C] p-8 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex flex-col items-center max-w-xs">
+          <h3 className="text-xl font-semibold mb-4 text-center">Total Revenue</h3>
+          <p className="text-2xl font-bold text-yellow-500 text-center">
+            LKR {totalRevenue.toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-300 mt-4 text-center">
+            This is the total revenue earned from all orders in the selected period.
+          </p>
+        </div>
+
+        {/* Total Orders */}
+        <div className="bg-[#1A202C] p-8 rounded-2xl shadow-md hover:shadow-lg transition-all transform hover:scale-105 flex flex-col items-center max-w-xs">
+          <h3 className="text-xl font-semibold mb-4 text-center">Total Orders</h3>
+          <p className="text-4xl font-bold text-green-400">{totalOrders}</p>
+          <p className="text-sm text-gray-300 mt-4 text-center">
+            This shows the total number of orders placed during the selected period.
+          </p>
+        </div>
+      </div>
+
+      {/* Sales Chart */}
+      <div className="w-full max-w-6xl mx-auto h-[500px] mt-12">
         <Bar
           data={data}
           options={{
@@ -109,12 +141,12 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
                 display: true,
                 text: `Sales Overview (${timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)})`,
                 font: {
-                  size: 22,
-                  weight: 'bold',
+                  size: 24,
+                  weight: "bold",
                 },
-                color: '#fff',
+                color: "#fff",
                 padding: {
-                  bottom: 20,
+                  bottom: 30,
                 },
               },
               tooltip: {
@@ -124,48 +156,36 @@ export default function SalesAnalysis({ orders = [] }: SalesAnalysisProps) {
                   },
                 },
               },
+              legend: {
+                display: false,
+              },
             },
             scales: {
               x: {
                 grid: {
-                  display: true,
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  borderWidth: 1,
+                  color: "rgba(255, 255, 255, 0.1)",
                 },
                 ticks: {
-                  color: '#fff',
+                  color: "#fff",
+                  font: {
+                    size: 13,
+                  },
                 },
               },
               y: {
                 grid: {
-                  borderDash: [5, 5],
-                  color: 'rgba(255, 255, 255, 0.3)',
-                  borderColor: 'rgba(255, 255, 255, 0.3)',
-                  borderWidth: 1,
+                  borderDash: [8, 4],
+                  color: "rgba(255, 255, 255, 0.15)",
                 },
                 ticks: {
                   beginAtZero: true,
-                  stepSize: 10,
-                  color: '#fff',
+                  stepSize: 100,
+                  color: "#fff",
                 },
               },
             },
           }}
         />
-      </div>
-
-      {/* Summary Section */}
-      <div className="space-y-4 bg-[#1A202C] p-6 rounded-lg shadow-md">
-        <div className="flex justify-between text-gray-300">
-          <p className="font-semibold text-lg text-white">Total Revenue:</p>
-          <p className="text-xl font-bold text-green-400">LKR {filteredOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}</p>
-        </div>
-
-        <div className="flex justify-between text-gray-300">
-          <p className="font-semibold text-lg text-white">Total Orders:</p>
-          <p className="text-xl font-bold text-blue-400">{filteredOrders.length}</p>
-        </div>
       </div>
     </div>
   );

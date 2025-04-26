@@ -293,7 +293,7 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="pb-25"
       >
-        <Navbar name="Event Management" />
+        <Navbar name="Event Details" />
       </motion.div>
 
       {/* <motion.h2

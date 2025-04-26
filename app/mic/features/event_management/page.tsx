@@ -374,52 +374,6 @@ export default function Home() {
                     <option className="bg-gray-800 text-white">Finagle</option>
                   </select>
                 </div>
-
-                {/* Event Type */}
-                <div className="flex flex-col min-w-[150px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <HiOutlineTag className="text-blue-400" />
-                    <span>Event Type</span>
-                  </label>
-                  <select
-                    name="eventType"
-                    value={searchEventType}
-                    onChange={handleSearchChange}
-                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
-                  >
-                    <option className="bg-gray-800 text-white">All</option>
-                    <option className="bg-gray-800 text-white">
-                      Event Held by a Club
-                    </option>
-                    <option className="bg-gray-800 text-white">
-                      Event Held by a Society
-                    </option>
-                    <option className="bg-gray-800 text-white">A Stall</option>
-                  </select>
-                </div>
-
-                {/* Society */}
-                <div className="flex flex-col min-w-[150px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <HiOutlineUserGroup className="text-blue-400" />
-                    <span>Society</span>
-                  </label>
-                  <select
-                    name="society"
-                    value={searchSociety}
-                    onChange={handleSearchChange}
-                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
-                  >
-                    <option className="bg-gray-800 text-white">All</option>
-                    <option className="bg-gray-800 text-white">FOSS</option>
-                    <option className="bg-gray-800 text-white">IEEE</option>
-                    <option className="bg-gray-800 text-white">NSBM</option>
-                    <option className="bg-gray-800 text-white">Rotaract</option>
-                    <option className="bg-gray-800 text-white">Leo Club</option>
-                    <option className="bg-gray-800 text-white">AIESEC</option>
-                  </select>
-                </div>
-
                 {/* Status */}
                 <div className="flex flex-col min-w-[150px]">
                   <label className="text-gray-300 mb-2 flex items-center gap-1">
@@ -573,6 +527,18 @@ export default function Home() {
                     </span>
                   </p>
                 </div>
+
+                <div className="mt-4 flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                    onClick={() => setSelectedEvent(event)}
+                  >
+                    <FiEdit />
+                    <span>EDIT</span>
+                  </motion.button>
+                </div>
               </motion.div>
             ))}
           </AnimatePresence>
@@ -597,6 +563,173 @@ export default function Home() {
           </button>
         </motion.div>
       )}
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-white border border-white/10"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                  Edit Event
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-gray-400 hover:text-white text-xl"
+                >
+                  ✕
+                </motion.button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Event Name
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedEvent.event_name}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_name: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Event Name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedEvent.event_date}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_date: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={selectedEvent.event_time}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_time: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Venue
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedEvent.event_venue}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_venue: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="Venue"
+                  />
+                </div>
+
+                {/* Status dropdown */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Event Status
+                  </label>
+                  <select
+                    value={selectedEvent.event_status || "Upcoming"}
+                    onChange={(e) =>
+                      setSelectedEvent({
+                        ...selectedEvent,
+                        event_status: e.target.value,
+                      })
+                    }
+                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
+                  >
+                    <option>Upcoming</option>
+                    <option>Ongoing</option>
+                    <option>Completed</option>
+                    <option>Cancelled</option>
+                    <option>Rescheduled</option>
+                  </select>
+                </div>
+              </div>
+
+              {selectedEvent.event_image && (
+                <div className="mt-6 relative rounded-lg overflow-hidden h-48">
+                  <Image
+                    src={selectedEvent.event_image}
+                    alt="Event"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="mt-6 space-y-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-3 rounded-lg w-full font-medium shadow-lg flex items-center justify-center gap-2"
+                  onClick={() => handleEdit(selectedEvent._id)}
+                >
+                  {buttonLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  ) : (
+                    <>
+                      <FiEdit />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg w-full font-medium transition-colors"
+                  onClick={() => setSelectedEvent(null)}
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

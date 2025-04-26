@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/mic_navbar";
 import SystemMonitor from "@/components/monitor";
 import GlassmorphicCard from "@/components/clickableCard";
 import fetcher from "@/components/services/fetcher";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
-export default function EventManagementPage() {
+export default function UnifreshDashboardPage() {
   const [systemStats, setSystemStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { ref, inView } = useInView({
@@ -68,6 +68,7 @@ export default function EventManagementPage() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-gradient-to-b from-[#0A0D14] to-[#131824]"
     >
+      {/* Navbar */}
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -77,6 +78,7 @@ export default function EventManagementPage() {
         <Navbar />
       </motion.div>
 
+      {/* System Monitor */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -90,27 +92,51 @@ export default function EventManagementPage() {
         <SystemMonitor />
       </motion.div>
 
+      {/* Horizontal Cards */}
       <motion.div
         ref={ref}
         variants={container}
         initial="hidden"
         animate={inView ? "show" : "hidden"}
-        className="flex items-center justify-center w-screen gap-10 flex-wrap py-10"
+        className="flex flex-row flex-wrap justify-center gap-8 mt-10 px-4"
       >
         <motion.div variants={item}>
           <GlassmorphicCard
-            title="User Status"
-            text="Check & Edit User Details"
+            title="Event Details"
+            text="Check all the upcoming Events"
             buttonText="->"
-            onClick={() => (window.location.href = "/admin/features/users")}
+            onClick={() => (window.location.href = "/mic/features/event_details")}
           />
         </motion.div>
+
         <motion.div variants={item}>
           <GlassmorphicCard
-            title="Event "
-            text="Check & Edit Event Details"
+            title="Event Management"
+            text="Check, edit Event Mangement "
             buttonText="->"
-            onClick={() => (window.location.href = "/admin/features/event_management/a_events_main")}
+            onClick={() =>
+              (window.location.href = "/mic/features/event_management")
+            }
+          />
+        </motion.div>
+
+        <motion.div variants={item}>
+          <GlassmorphicCard
+            title="Analysis"
+            text=" Event Club & society Analysis"
+            buttonText="->"
+            onClick={() => (window.location.href = "/mic/features/event_analysis")}
+          />
+        </motion.div>
+
+        <motion.div variants={item}>
+          <GlassmorphicCard
+            title="Profile"
+            text="Profile Account "
+            buttonText="->"
+            onClick={() =>
+              (window.location.href = "/mic/features/proflie")
+            }
           />
         </motion.div>
       </motion.div>

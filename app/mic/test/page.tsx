@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "@/components/unifresh_navbar";
+import Navbar from "@/components/navbar";
 import SystemMonitor from "@/components/monitor";
 import GlassmorphicCard from "@/components/clickableCard";
 import fetcher from "@/components/services/fetcher";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
-export default function UnifreshDashboardPage() {
+export default function EventManagementPage() {
   const [systemStats, setSystemStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { ref, inView } = useInView({
@@ -68,7 +68,6 @@ export default function UnifreshDashboardPage() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-gradient-to-b from-[#0A0D14] to-[#131824]"
     >
-      {/* Navbar */}
       <motion.div
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -78,7 +77,6 @@ export default function UnifreshDashboardPage() {
         <Navbar />
       </motion.div>
 
-      {/* System Monitor */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -92,51 +90,27 @@ export default function UnifreshDashboardPage() {
         <SystemMonitor />
       </motion.div>
 
-      {/* Horizontal Cards */}
       <motion.div
         ref={ref}
         variants={container}
         initial="hidden"
         animate={inView ? "show" : "hidden"}
-        className="flex flex-row flex-wrap justify-center gap-8 mt-10 px-4"
+        className="flex items-center justify-center w-screen gap-10 flex-wrap py-10"
       >
         <motion.div variants={item}>
           <GlassmorphicCard
-            title="Menu"
-            text="Check,Edit & Add meun items"
+            title="User Status"
+            text="Check & Edit User Details"
             buttonText="->"
-            onClick={() => (window.location.href = "/unifresh/features/menu")}
+            onClick={() => (window.location.href = "/admin/features/users")}
           />
         </motion.div>
-
         <motion.div variants={item}>
           <GlassmorphicCard
-            title="Order"
-            text="Check, Accept or Decline Orders "
+            title="Event "
+            text="Check & Edit Event Details"
             buttonText="->"
-            onClick={() =>
-              (window.location.href = "/unifresh/features/order")
-            }
-          />
-        </motion.div>
-
-        <motion.div variants={item}>
-          <GlassmorphicCard
-            title="Analysis"
-            text="Check Sales and Menu Analysis"
-            buttonText="->"
-            onClick={() => (window.location.href = "/unifresh/features/anlysis/analysis_main")}
-          />
-        </motion.div>
-
-        <motion.div variants={item}>
-          <GlassmorphicCard
-            title="Profile"
-            text="Profile Account "
-            buttonText="->"
-            onClick={() =>
-              (window.location.href = "/unifresh/features/profile")
-            }
+            onClick={() => (window.location.href = "/admin/features/event_management/a_events_main")}
           />
         </motion.div>
       </motion.div>
