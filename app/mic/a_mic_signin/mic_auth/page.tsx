@@ -18,7 +18,7 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch(`${SERVER_ADDRESS}/auth/admin`, {
+      const response = await fetch(`${SERVER_ADDRESS}/auth/mic/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -69,7 +69,9 @@ export default function Login() {
               <h1 className="text-white text-3xl font-semibold">
                 Dashboard Login
               </h1>
-              <h2 className="text-white text-sm font-medium">Club and society Masters In Charge</h2>
+              <h2 className="text-white text-sm font-medium">
+                Club and society Masters In Charge
+              </h2>
             </div>
             <div className="flex flex-col items-center justify-center w-full h-full">
               <div className="flex flex-col space-y-2 w-full max-w-md p-10">

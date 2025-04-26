@@ -23,8 +23,9 @@ import {
   FiFolder,
   FiFilePlus,
   FiX,
+  FiLock,
 } from "react-icons/fi";
-import { RiDatabaseLine, RiAddLine } from "react-icons/ri";
+import { RiDatabaseLine, RiAddLine, RiLockPasswordLine } from "react-icons/ri";
 import { HiOutlineDocumentText } from "react-icons/hi";
 
 export default function MongoDBInterface() {
@@ -41,8 +42,16 @@ export default function MongoDBInterface() {
   const [limit, setLimit] = useState(20);
   const [documentUpdating, setDocumentUpdating] = useState(false);
 
+  // Password hashing states
+  const [showPasswordHashModal, setShowPasswordHashModal] = useState(false);
+  const [plainTextPassword, setPlainTextPassword] = useState("");
+  const [hashedPassword, setHashedPassword] = useState("");
+  const [hashingPassword, setHashingPassword] = useState(false);
+
   // New state variables for collection and document creation
   const [collections, setCollections] = useState([
+    "admin",
+    "mic_users",
     "users",
     "students",
     "lecturers",
@@ -301,6 +310,50 @@ export default function MongoDBInterface() {
     }
   };
 
+  // Hash password function
+  const handleHashPassword = async () => {
+    if (!plainTextPassword) {
+      setError("Password is required");
+      return;
+    }
+
+    setHashingPassword(true);
+    setError(null);
+    setHashedPassword("");
+
+    try {
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+      if (!API_KEY) {
+        throw new Error("API key not found");
+      }
+
+      const response = await axios.post(
+        `${SERVER_ADDRESS}/custom/hash-password`,
+        { plaintext: plainTextPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      setHashedPassword(response.data.hash);
+      setError({
+        type: "success",
+        message: "Password hashed successfully!",
+      });
+    } catch (err) {
+      console.error("Error hashing password:", err);
+      setError(
+        err.response?.data?.error ||
+          "Failed to hash password. Please try again.",
+      );
+    } finally {
+      setHashingPassword(false);
+    }
+  };
+
   // Filter documents based on search query
   const filteredDocuments = documents.filter((doc) => {
     if (!searchQuery) return true;
@@ -447,7 +500,7 @@ export default function MongoDBInterface() {
             </Button>
           </div>
 
-          <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-2 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
             {collections.map((collection) => (
               <motion.button
                 key={collection}
@@ -464,6 +517,20 @@ export default function MongoDBInterface() {
                 {collection}
               </motion.button>
             ))}
+          </div>
+
+          {/* Tools Section */}
+          <div className="mt-6 pt-6 border-t border-gray-800/50">
+            <h3 className="text-lg font-medium text-purple-300 mb-4">Tools</h3>
+            <motion.button
+              onClick={() => setShowPasswordHashModal(true)}
+              className="w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center bg-gradient-to-r from-purple-900/30 to-purple-800/20 hover:from-purple-800/40 hover:to-purple-700/30 text-purple-200 shadow-md"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <RiLockPasswordLine className="mr-2 text-purple-400" size={18} />
+              Password Hasher
+            </motion.button>
           </div>
         </motion.div>
 
@@ -989,6 +1056,123 @@ export default function MongoDBInterface() {
                     </>
                   ) : (
                     "Create Document"
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Password Hash Modal */}
+      <AnimatePresence>
+        {showPasswordHashModal && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPasswordHashModal(false)}
+            />
+            <motion.div
+              className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900 rounded-xl border border-purple-500/30 shadow-xl p-6 z-50 w-full max-w-md"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 15 }}
+            >
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-bold text-purple-300 flex items-center">
+                  <FiLock className="mr-2 text-purple-500" /> Password Hasher
+                </h2>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-400 hover:bg-gray-800/70 hover:text-white"
+                  onClick={() => setShowPasswordHashModal(false)}
+                >
+                  <FiX size={20} />
+                </Button>
+              </div>
+
+              <p className="text-gray-400 text-sm mb-6">
+                Convert a plain text password to a secure bcrypt hash that can
+                be stored in the database. This tool uses the same hashing
+                algorithm as the backend server.
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Plain Text Password:
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter password to hash"
+                  value={plainTextPassword}
+                  onChange={(e) => setPlainTextPassword(e.target.value)}
+                  className="bg-gray-800/80 border-gray-700 text-white focus:ring-purple-600 focus:border-purple-500"
+                />
+              </div>
+
+              {hashedPassword && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-purple-300 mb-2">
+                    Bcrypt Hash:
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      readOnly
+                      value={hashedPassword}
+                      className="w-full p-3 bg-gray-800/90 border border-purple-600/30 rounded-lg text-green-300 font-mono text-sm focus:ring-purple-600 focus:border-purple-500 h-24 resize-none"
+                    />
+                    <Button
+                      className="absolute right-2 top-2 bg-gray-700/70 hover:bg-gray-600"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(hashedPassword);
+                        setError({
+                          type: "success",
+                          message: "Copied to clipboard!",
+                        });
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    This is the hash that should be stored in the database
+                    instead of the plain text password.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  className="bg-gray-800/70 border-gray-700 hover:bg-gray-700 text-gray-300"
+                  onClick={() => {
+                    setShowPasswordHashModal(false);
+                    setPlainTextPassword("");
+                    setHashedPassword("");
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white"
+                  onClick={handleHashPassword}
+                  disabled={hashingPassword || !plainTextPassword}
+                >
+                  {hashingPassword ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Hashing...
+                    </>
+                  ) : (
+                    <>
+                      <RiLockPasswordLine className="mr-2" /> Generate Hash
+                    </>
                   )}
                 </Button>
               </div>
