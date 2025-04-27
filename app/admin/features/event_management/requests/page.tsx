@@ -6,9 +6,33 @@ import SERVER_ADDRESS from "@/config";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/navbar";
 
+// Define the EventRequest interface
+interface EventRequest {
+  _id: string;
+  eventName: string;
+  selectedDate: string;
+  selectedTime?: string;
+  location: string;
+  maxTickets?: number;
+  eventType: string;
+  societyName: string;
+  registrationLink?: string;
+  description?: string;
+  status?: string;
+  image?: {
+    type: string;
+    data: string;
+  };
+  file?: {
+    type: string;
+    data: string;
+    name: string;
+  };
+}
+
 export default function EventRequestsPage() {
-  const [requests, setRequests] = useState([]);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [requests, setRequests] = useState<EventRequest[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<EventRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeInput, setTimeInput] = useState("");
   const [showTimeModal, setShowTimeModal] = useState(false);
@@ -27,7 +51,21 @@ export default function EventRequestsPage() {
       try {
         const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
         const data = await fetcher("event_requests", API_KEY);
-        setRequests(data);
+        
+        // Process the data to handle any requests that might already be declined
+        const processedData = data.map((request: EventRequest) => {
+          // Check if the request has a status field already
+          if (request.status) {
+            return request;
+          }
+          // Otherwise, default to an empty status
+          return {
+            ...request,
+            status: ""
+          };
+        });
+        
+        setRequests(processedData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching event requests:", error);
@@ -104,17 +142,67 @@ export default function EventRequestsPage() {
     try {
       setProcessingIds((prev) => [...prev, id]);
       const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
-      await axios.delete(`${SERVER_ADDRESS}/data/event_requests/delete/${id}`, {
+      
+      // Fetch the request data by ID
+      const response = await axios.get(
+        `${SERVER_ADDRESS}/data/event_requests/fetch/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        },
+      );
+
+      const requestData = response.data;
+
+      // Prepare the data for storing in the events collection with declined status
+      const eventData = {
+        event_name: requestData.eventName,
+        event_date: requestData.selectedDate,
+        event_time: requestData.selectedTime || "",
+        event_image: requestData.image
+          ? `data:${requestData.image.type};base64,${requestData.image.data}`
+          : "",
+        event_description: requestData.description || "",
+        event_venue: requestData.location || "",
+        event_tickets: requestData.maxTickets || 0,
+        event_type: requestData.eventType || "",
+        event_held_by: requestData.societyName || "",
+        event_status: "Declined", // Set status to Declined
+        event_link: requestData.registrationLink || "",
+      };
+
+      // Store the data in the events collection
+      await axios.post(`${SERVER_ADDRESS}/data/events/store`, eventData, {
         headers: {
           Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
         },
       });
 
-      // Update the local state
-      setRequests(requests.filter((request) => request._id !== id));
+      // Mark the request as declined in the local state before removing it
+      setRequests(requests.map(request => 
+        request._id === id 
+          ? {...request, status: "Declined"} 
+          : request
+      ));
+
+      // Wait 2 seconds to show the declined status before removing
+      setTimeout(async () => {
+        // Remove the request from the pending list
+        await axios.delete(`${SERVER_ADDRESS}/data/event_requests/delete/${id}`, {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        });
+
+        // Update the local state
+        setRequests(requests.filter((request) => request._id !== id));
+        setProcessingIds((prev) => prev.filter((itemId) => itemId !== id));
+      }, 2000);
+      
     } catch (error) {
-      console.error("Error deleting request:", error);
-    } finally {
+      console.error("Error declining and storing event:", error);
       setProcessingIds((prev) => prev.filter((itemId) => itemId !== id));
     }
   };
@@ -160,7 +248,7 @@ export default function EventRequestsPage() {
   };
 
   // Handle search and filter changes
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.target.name === "date") {
       setSearchDate(e.target.value);
     } else if (e.target.name === "location") {
@@ -335,7 +423,11 @@ export default function EventRequestsPage() {
             {filteredRequests.map((request) => (
               <div
                 key={request._id}
-                className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col"
+                className={`${
+                  request.status === "Declined" 
+                    ? "bg-red-900/30 border border-red-500/50" 
+                    : "bg-white/10"
+                } backdrop-blur-sm rounded-xl shadow-lg overflow-hidden flex flex-col`}
               >
                 {request.image && (
                   <div className="h-48 overflow-hidden">
@@ -348,9 +440,16 @@ export default function EventRequestsPage() {
                 )}
 
                 <div className="p-5 flex-grow">
-                  <h3 className="text-xl font-semibold mb-2">
-                    {request.eventName}
-                  </h3>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-semibold">
+                      {request.eventName}
+                    </h3>
+                    {request.status === "Declined" && (
+                      <span className="px-2 py-1 bg-red-600 text-white text-xs font-medium rounded-full">
+                        Declined
+                      </span>
+                    )}
+                  </div>
 
                   <div className="space-y-2 text-gray-300 text-sm mb-4">
                     <p>
@@ -423,11 +522,13 @@ export default function EventRequestsPage() {
                     <button
                       onClick={() => {
                         const link = document.createElement("a");
-                        link.href = `data:${request.file.type};base64,${request.file.data}`;
-                        link.download = request.file.name;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
+                        if (request.file && request.file.type && request.file.data && request.file.name) {
+                          link.href = `data:${request.file.type};base64,${request.file.data}`;
+                          link.download = request.file.name;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm flex justify-center items-center"
                     >
@@ -443,7 +544,7 @@ export default function EventRequestsPage() {
                     {processingIds.includes(request._id) ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     ) : null}
-                    Decline
+                    Reject
                   </button>
                 </div>
               </div>

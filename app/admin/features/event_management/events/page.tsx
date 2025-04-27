@@ -278,6 +278,8 @@ export default function Home() {
         return "bg-purple-500";
       case "cancelled":
         return "bg-red-500";
+      case "declined":
+        return "bg-red-600";
       case "rescheduled":
         return "bg-yellow-500";
       default:
@@ -442,6 +444,9 @@ export default function Home() {
                       Cancelled
                     </option>
                     <option className="bg-gray-800 text-white">
+                      Declined
+                    </option>
+                    <option className="bg-gray-800 text-white">
                       Rescheduled
                     </option>
                   </select>
@@ -517,9 +522,15 @@ export default function Home() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group"
+                className={`bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group ${
+                  event.event_status?.toLowerCase() === "declined" ? "bg-red-950/20" : ""
+                }`}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div className={`absolute inset-0 bg-gradient-to-br ${
+                  event.event_status?.toLowerCase() === "declined" 
+                  ? "from-red-500/10 to-red-800/10" 
+                  : "from-blue-500/10 to-purple-500/10"
+                } opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}></div>
 
                 {event.event_image && (
                   <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden">

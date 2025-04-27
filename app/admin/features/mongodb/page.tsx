@@ -58,6 +58,7 @@ export default function MongoDBInterface() {
     "staff",
     "vendors",
     "events",
+    "event_requests",
     "event_registrations",
     "timetable",
     "food_orders",
