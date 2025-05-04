@@ -10,6 +10,9 @@ import {
 } from "recharts";
 import { Cpu, MemoryStick, HardDrive } from "lucide-react";
 import fetchData from "@/components/services/fetcher";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const API_KEY =
   typeof window !== "undefined"
@@ -19,7 +22,8 @@ const TABLE_NAME = "admin_sys_stats";
 console.log(API_KEY);
 
 export default function SystemMonitor() {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState<Array<any>>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
   const maxDataPoints = 20;
   const isFetching = useRef(false); // Use ref instead of state to track ongoing fetch
 
@@ -31,6 +35,9 @@ export default function SystemMonitor() {
       try {
         console.log("Refreshing");
         const data = await fetchData(TABLE_NAME, API_KEY);
+
+        // Reset error state on successful fetch
+        setApiError(null);
 
         if (Array.isArray(data)) {
           const newStats = data.slice(-maxDataPoints).map((entry) => ({
@@ -47,8 +54,21 @@ export default function SystemMonitor() {
             return prevStats;
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching system stats:", error);
+
+        // Check for API key related errors
+        if (error.status === 401 || error.status === 403) {
+          setApiError(
+            "API key invalid or expired. Please update your API key.",
+          );
+        } else if (!API_KEY) {
+          setApiError("No API key found. Please provide a valid API key.");
+        } else {
+          setApiError(
+            `Error fetching data: ${error.message || "Unknown error"}`,
+          );
+        }
       } finally {
         isFetching.current = false; // Allow next request
       }
@@ -58,10 +78,28 @@ export default function SystemMonitor() {
     const interval = setInterval(fetchStats, 5000);
 
     return () => clearInterval(interval);
-  }, []); // Remove `isLoading` from dependencies
+  }, []);
 
   return (
     <Card className="p-4 w-full">
+      {apiError && (
+        <Alert variant="destructive" className="mb-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <AlertTitle>API Error</AlertTitle>
+              <AlertDescription>{apiError}</AlertDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setApiError(null)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      )}
       <h2 className="text-xl font-bold mb-2">System Usage</h2>
       <div className="flex gap-4 mb-4">
         <div className="flex items-center gap-2">

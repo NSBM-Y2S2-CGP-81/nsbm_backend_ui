@@ -7,7 +7,7 @@ import SERVER_ADDRESS from "@/config";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setError(null); // Clear previous errors
@@ -40,16 +40,26 @@ export default function Login() {
         // Store the token securely in localStorage
         localStorage.setItem("NEXT_PUBLIC_SYS_API", data.access_token);
 
+        // Also store the user_id in localStorage
+        if (data.user_id) {
+          localStorage.setItem("USER_ID", data.user_id);
+        }
+
         // If using sessionStorage instead:
         // sessionStorage.setItem("NEXT_PUBLIC_SYS_API", data.access_token);
+        // sessionStorage.setItem("USER_ID", data.user_id);
 
         // Redirect or update state after login
         window.location.href = "/mic/features/mic_home"; // Change to your desired route
       } else {
         throw new Error("Access token not received.");
       }
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     }
   };
 

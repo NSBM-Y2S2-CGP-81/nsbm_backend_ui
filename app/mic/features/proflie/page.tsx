@@ -1,26 +1,74 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import Navbar from "@/components/navbar";
+import axios from "axios";
+import SERVER_ADDRESS from "@/config";
+import { toast, Toaster } from "react-hot-toast";
 
 const MicProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [micData, setMicData] = useState({
-    micName: "Jane Doe",
-    clubName: "Tech Enthusiasts Club",
-    description: "We explore the latest trends in technology and innovation!",
-    email: "techclub@unifresh.com",
-    phone: "+1 987 654 3210",
-    location: "Student Union, Room 102",
+    _id: "",
+    email: "",
+    society_name: "",
     password: "",
+    newPassword: "",
     confirmPassword: "",
-    otpEmail: "",
-    otpPhone: "",
   });
 
-  const [otpVerified, setOtpVerified] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    fetchMicData();
+  }, []);
+
+  const fetchMicData = async () => {
+    setIsLoading(true);
+    try {
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
+      const MIC_ID = localStorage.getItem("USER_ID");
+      if (!API_KEY) {
+        toast.error("Authentication failed. Please login again.");
+        setTimeout(
+          () => (window.location.href = "/mic/a_mic_signin/mic_auth"),
+          2000,
+        );
+        return;
+      }
+
+      // Fetch user data directly using token
+      const response = await axios.get(
+        `${SERVER_ADDRESS}/data/mic_users/fetch/${MIC_ID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        },
+      );
+
+      console.log(response);
+      const userData = response.data;
+      setMicData({
+        _id: userData._id || "",
+        email: userData.email || "",
+        society_name: userData.society_name || "",
+        password: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error fetching MIC data:", error);
+      toast.error("Failed to load your profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setMicData({ ...micData, [e.target.name]: e.target.value });
   };
 
@@ -28,65 +76,106 @@ const MicProfile = () => {
     setIsEditing(!isEditing);
   };
 
-  const handleSave = () => {
-    if (micData.password !== micData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+  const handleSave = async () => {
+    // If changing password, validate password rules and matching
+    if (micData.newPassword) {
+      if (micData.newPassword !== micData.confirmPassword) {
+        toast.error("Passwords do not match!");
+        return;
+      }
+
+      if (micData.newPassword.length < 8) {
+        toast.error("Password must be at least 8 characters");
+        return;
+      }
     }
-    if (!otpVerified) {
-      alert("Please verify the OTP to change your password.");
-      return;
-    }
 
-    console.log("Saved Data:", micData);
-    setIsEditing(false);
-    alert("Profile updated successfully!");
-  };
+    setSubmitting(true);
+    try {
+      const API_KEY = localStorage.getItem("NEXT_PUBLIC_SYS_API");
 
-  const handleSendOtp = (method: "email" | "phone") => {
-    // Simulate sending OTP
-    alert(`OTP sent to your email and phone number.`);
-  };
+      // Prepare update data - only include password if it was changed
+      const updateData: { password?: string } = {};
 
-  const handleVerifyOtp = () => {
-    // Simulate OTP verification
-    if (micData.otpEmail === "123456" && micData.otpPhone === "654321") {
-      setOtpVerified(true);
-      alert("OTP Verified! You can now change your password.");
-    } else {
-      alert("Invalid OTPs. Please try again.");
+      // Only include password if it was changed
+      if (micData.newPassword) {
+        // First hash the password using the hashPassword endpoint
+        const hashResponse = await axios.post(
+          `${SERVER_ADDRESS}/custom/hash-password`,
+          { plaintext: micData.newPassword },
+          {
+            headers: {
+              Authorization: `Bearer ${API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        // Use the hashed password instead of plaintext
+        if (hashResponse.data && hashResponse.data.hash) {
+          updateData.password = hashResponse.data.hash;
+        } else {
+          throw new Error("Failed to hash password");
+        }
+      }
+
+      await axios.put(
+        `${SERVER_ADDRESS}/data/mic_users/update/${micData._id}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+
+      // Reset password fields
+      setMicData({
+        ...micData,
+        password: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset to initial data
-    setMicData({
-      micName: "Jane Doe",
-      clubName: "Tech Enthusiasts Club",
-      description: "We explore the latest trends in technology and innovation!",
-      email: "techclub@unifresh.com",
-      phone: "+1 987 654 3210",
-      location: "Student Union, Room 102",
-      password: "",
-      confirmPassword: "",
-      otpEmail: "",
-      otpPhone: "",
-    });
+    fetchMicData();
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] p-6">
+      <Toaster position="top-right" />
       {/* Navbar */}
-      <Navbar name="clubs & society: Profile [MIC]" />
+      <Navbar name="Clubs & Society: Profile [MIC]" />
 
-      <div className="flex items-center justify-center mt-10">
+      <div className="flex items-center justify-center mt-30">
         <div className="bg-[#1F2937] rounded-3xl shadow-2xl p-10 w-full max-w-3xl">
           {/* Profile Image */}
           <div className="flex flex-col items-center mb-8">
             <FaUserCircle className="text-6xl text-gray-400 mb-2" />
-            <h2 className="text-3xl font-bold text-white">{micData.micName}</h2>
-            <p className="text-gray-400">{micData.clubName}</p>
+            <h2 className="text-3xl font-bold text-white">
+              {micData.society_name}
+            </h2>
+            <p className="text-gray-400">{micData.email}</p>
           </div>
 
           {/* Edit Button */}
@@ -103,121 +192,48 @@ const MicProfile = () => {
 
           {/* Form Section */}
           <div className="space-y-6">
-            {/* MIC Name */}
+            {/* Email field - read-only */}
             <div>
-              <label className="text-gray-300">MIC Name</label>
+              <label className="text-gray-300">Email</label>
               <input
-                type="text"
-                name="micName"
-                value={micData.micName}
-                onChange={handleChange}
-                disabled={!isEditing}
+                type="email"
+                name="email"
+                value={micData.email}
+                disabled={true}
                 className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
 
             {/* Club/Society Name */}
             <div>
-              <label className="text-gray-300">Club/Society Name</label>
+              <label className="text-gray-300">Society Name</label>
               <input
                 type="text"
-                name="clubName"
-                value={micData.clubName}
-                onChange={handleChange}
-                disabled={!isEditing}
+                name="society_name"
+                value={micData.society_name}
+                disabled={true} // Society name can't be changed
                 className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-            </div>
-
-            <hr className="border-gray-700 my-6" />
-
-            {/* Description */}
-            <div>
-              <label className="text-gray-300">Description</label>
-              <textarea
-                name="description"
-                value={micData.description}
-                onChange={handleChange}
-                disabled={!isEditing}
-                rows={4}
-                className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
-
-            {/* Contact Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="text-gray-300">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={micData.email}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-
-              <div>
-                <label className="text-gray-300">Phone</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={micData.phone}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="text-gray-300">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={micData.location}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              </div>
             </div>
 
             {/* Password Section */}
             {isEditing && (
               <>
                 <hr className="border-gray-700 my-6" />
-                {/* OTP */}
-                <div>
-                  <label className="text-gray-300">OTP</label>
-                  <input
-                    type="text"
-                    name="otpEmail"
-                    value={micData.otpEmail}
-                    onChange={handleChange}
-                    placeholder="Enter OTP"
-                    className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleSendOtp("email")}
-                    className="mt-2 px-4 py-1 bg-blue-600 text-white rounded-full"
-                  >
-                    Send OTP
-                  </button>
-                </div>
 
                 <div>
                   <label className="text-gray-300">New Password</label>
                   <input
                     type="password"
-                    name="password"
-                    value={micData.password}
+                    name="newPassword"
+                    value={micData.newPassword}
                     onChange={handleChange}
                     placeholder="Enter new password"
                     className="w-full mt-1 p-3 rounded-xl bg-[#374151] border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
-                  <p className="text-xs text-gray-400 mt-2">Leave blank to keep current password.</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Password must be at least 8 characters.
+                  </p>
                 </div>
 
                 <div>
@@ -239,13 +255,15 @@ const MicProfile = () => {
               <div className="flex gap-4 mt-8">
                 <button
                   onClick={handleSave}
-                  className="w-full py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  disabled={submitting}
+                  className="w-full py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:bg-blue-800 disabled:opacity-70"
                 >
-                  Save Changes
+                  {submitting ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="w-full py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium"
+                  disabled={submitting}
+                  className="w-full py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-medium disabled:bg-red-800 disabled:opacity-70"
                 >
                   Cancel
                 </button>
