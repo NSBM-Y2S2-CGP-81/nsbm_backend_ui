@@ -22,10 +22,10 @@ export default async function fetchData(tableName, key) {
   } catch (error) {
     console.log("Fetch Failed !", error);
     // Show popup instead of toast for error case as well
-    if (typeof window !== "undefined") {
-      alert("Invalid API or Session has expired, Please log back in");
-      window.location.href = "/a_selection";
-    }
+    // if (typeof window !== "undefined") {
+    //   alert("Invalid API or Session has expired, Please log back in");
+    //   window.location.href = "/a_selection";
+    // }
     return error;
   }
 }
