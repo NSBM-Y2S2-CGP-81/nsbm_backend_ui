@@ -69,6 +69,8 @@ export default function MongoDBInterface() {
     "todays_pick",
     "news",
     "crowd_uplink",
+    "restaurants",
+    "dishes",
   ]);
   const [showNewCollectionModal, setShowNewCollectionModal] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
