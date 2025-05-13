@@ -29,7 +29,7 @@ export default function Home() {
             title: newsItem.news_title,
             content: newsItem.news_content,
             image: newsItem.image,
-          })),
+          }))
         );
         setLoading(false);
       } catch (error) {
@@ -122,26 +122,27 @@ export default function Home() {
               value={newNews.news_title}
               onChange={handleChange}
               placeholder="News Title"
-              className="w-full p-2 mb-2 border border-gray-400 rounded bg-transparent text-white focus:outline-none"
+              className="w-full p-4 mb-4 rounded-lg text-white bg-transparent border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
             <input
               type="file"
               accept="image/*"
               onChange={handleImageFileChange}
-              className="w-full p-2 mb-2 border border-gray-400 rounded bg-transparent text-white"
+              className="w-full p-4 mb-4 rounded-lg bg-gray-600 text-white border border-transparent focus:ring-2 focus:ring-blue-400 transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer"
+              aria-label="Upload News Image"
             />
             <textarea
               name="news_content"
               value={newNews.news_content}
               onChange={handleChange}
               placeholder="News Content"
-              className="w-full h-56 p-2 mb-2 border border-gray-400 rounded bg-transparent text-white focus:outline-none"
+              className="w-full h-56 p-4 mb-4 rounded-lg text-white bg-transparent border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
             <button
               type="submit"
-              className="w-full  bg-blue-500 text-white p-20 rounded hover:bg-blue-600 focus:outline-none"
+              className="w-full p-4 rounded-lg text-white bg-blue-500 hover:from-blue-600 hover:to-teal-600 focus:outline-none transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg"
             >
               Add News
             </button>

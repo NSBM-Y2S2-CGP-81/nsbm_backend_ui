@@ -135,7 +135,7 @@ const OrdersSection: React.FC = () => {
               {order.status === 'Ready to be Delivered' && order.paymentStatus === 'Pending' && order.paymentMethod === 'Cash' && (
                 <div className="flex justify-end gap-2 mt-2">
                   <button onClick={() => handlePaymentReceive(order.id)} className="px-4 py-2 bg-yellow-600 text-black rounded hover:bg-yellow-700">
-                    Receive Payment
+                    Received Payment
                   </button>
                   <button onClick={() => handleComplain(order.id)} className="px-4 py-2 bg-red-600 rounded hover:bg-red-700">
                     File Complaint

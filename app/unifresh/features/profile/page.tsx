@@ -6,7 +6,7 @@ import Navbar from "@/components/navbar";
 const VendorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [vendorData, setVendorData] = useState({
-    vendorName: "John Smith",
+    vendorName: "Finagle",
     shopName: "Fresh Bites",
     description: "We offer the freshest fruits and snacks around campus!",
     email: "freshbites@unifresh.com",

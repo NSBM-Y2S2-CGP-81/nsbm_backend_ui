@@ -283,165 +283,155 @@ export default function Home() {
       default:
         return "bg-gray-500";
     }
-  };
+  };return (
+  <div className="min-h-screen bg-gradient-to-br from-[#0A0D14] to-[#111827] text-white p-4">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="pb-25"
+    >
+      <Navbar name="Event Management" />
+    </motion.div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A0D14] to-[#111827] text-white p-4">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="pb-25"
+    {/* Filters Toggle */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, delay: 0.3 }}
+      className="mb-4 "
+    >
+      <button
+        onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+        className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
       >
-        <Navbar name="Event Management" />
-      </motion.div>
+        <FiFilter className="inline" />
+        <span>{isFiltersVisible ? "Hide Filters" : "Show Filters"}</span>
+      </button>
+    </motion.div>
 
-      {/* <motion.h2
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="text-3xl font-bold mb-6 tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600"
-      >
-        UPCOMING EVENTS
-      </motion.h2> */}
-
-      {/* Filters Toggle */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-        className="mb-4 "
-      >
-        <button
-          onClick={() => setIsFiltersVisible(!isFiltersVisible)}
-          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+    {/* Filters - Search */}
+    <AnimatePresence>
+      {isFiltersVisible && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3 }}
+          className="overflow-hidden"
         >
-          <FiFilter className="inline" />
-          <span>{isFiltersVisible ? "Hide Filters" : "Show Filters"}</span>
-        </button>
-      </motion.div>
-
-      {/* Filters - Search */}
-      <AnimatePresence>
-        {isFiltersVisible && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <motion.div className="flex justify-between flex-wrap gap-4 bg-white/5 p-6 rounded-xl mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-              <div className="flex flex-wrap gap-4 items-end">
-                {/* Date */}
-                <div className="flex flex-col min-w-[150px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <HiOutlineCalendar className="text-blue-400" />
-                    <span>Date</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={searchDate}
-                    onChange={handleSearchChange}
-                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
-                  />
-                </div>
-
-                {/* Location */}
-                <div className="flex flex-col min-w-[150px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <HiOutlineLocationMarker className="text-blue-400" />
-                    <span>Location</span>
-                  </label>
-                  <select
-                    name="location"
-                    value={searchLocation}
-                    onChange={handleSearchChange}
-                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
-                  >
-                    <option className="bg-gray-800 text-white">All</option>
-                    <option className="bg-gray-800 text-white">General</option>
-                    <option className="bg-gray-800 text-white">FOC</option>
-                    <option className="bg-gray-800 text-white">FOB</option>
-                    <option className="bg-gray-800 text-white">FOE</option>
-                    <option className="bg-gray-800 text-white">
-                      Auditorium
-                    </option>
-                    <option className="bg-gray-800 text-white">Ground</option>
-                    <option className="bg-gray-800 text-white">Entrance</option>
-                    <option className="bg-gray-800 text-white">Edge</option>
-                    <option className="bg-gray-800 text-white">Finagle</option>
-                  </select>
-                </div>
-                {/* Status */}
-                <div className="flex flex-col min-w-[150px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <HiOutlineStatusOnline className="text-blue-400" />
-                    <span>Status</span>
-                  </label>
-                  <select
-                    name="status"
-                    value={searchStatus}
-                    onChange={handleSearchChange}
-                    className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
-                  >
-                    <option className="bg-gray-800 text-white">All</option>
-                    <option className="bg-gray-800 text-white">Upcoming</option>
-                    <option className="bg-gray-800 text-white">Ongoing</option>
-                    <option className="bg-gray-800 text-white">
-                      Completed
-                    </option>
-                    <option className="bg-gray-800 text-white">
-                      Cancelled
-                    </option>
-                    <option className="bg-gray-800 text-white">
-                      Rescheduled
-                    </option>
-                  </select>
-                </div>
-
-                {/* Name */}
-                <div className="flex flex-col min-w-[200px]">
-                  <label className="text-gray-300 mb-2 flex items-center gap-1">
-                    <FiSearch className="text-blue-400" />
-                    <span>Name</span>
-                  </label>
-                  <Input
-                    type="text"
-                    name="name"
-                    value={searchName}
-                    onChange={handleSearchChange}
-                    placeholder="Search From Name"
-                    className="bg-white/10 text-white border-white/20 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+          <motion.div className="flex justify-between flex-wrap gap-4 bg-white/5 p-6 rounded-xl mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="flex flex-wrap gap-4 items-end">
+              {/* Date */}
+              <div className="flex flex-col min-w-[150px]">
+                <label className="text-gray-300 mb-2 flex items-center gap-1">
+                  <HiOutlineCalendar className="text-blue-400" />
+                  <span>Date</span>
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={searchDate}
+                  onChange={handleSearchChange}
+                  className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200"
+                />
               </div>
 
-              {/* Clear Filters Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-4 py-2 rounded-lg hover:from-gray-800 hover:to-gray-950 transition-all h-fit self-end flex items-center gap-2 shadow-md"
-                onClick={clearFilters}
-              >
-                <span>Clear Filters</span>
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {/* Location */}
+              <div className="flex flex-col min-w-[150px]">
+                <label className="text-gray-300 mb-2 flex items-center gap-1">
+                  <HiOutlineLocationMarker className="text-blue-400" />
+                  <span>Location</span>
+                </label>
+                <select
+                  name="location"
+                  value={searchLocation}
+                  onChange={handleSearchChange}
+                  className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                >
+                  <option className="bg-gray-800 text-white">All</option>
+                  <option className="bg-gray-800 text-white">General</option>
+                  <option className="bg-gray-800 text-white">FOC</option>
+                  <option className="bg-gray-800 text-white">FOB</option>
+                  <option className="bg-gray-800 text-white">FOE</option>
+                  <option className="bg-gray-800 text-white">
+                    Auditorium
+                  </option>
+                  <option className="bg-gray-800 text-white">Ground</option>
+                  <option className="bg-gray-800 text-white">Entrance</option>
+                  <option className="bg-gray-800 text-white">Edge</option>
+                  <option className="bg-gray-800 text-white">Finagle</option>
+                </select>
+              </div>
+              {/* Status */}
+              <div className="flex flex-col min-w-[150px]">
+                <label className="text-gray-300 mb-2 flex items-center gap-1">
+                  <HiOutlineStatusOnline className="text-blue-400" />
+                  <span>Status</span>
+                </label>
+                <select
+                  name="status"
+                  value={searchStatus}
+                  onChange={handleSearchChange}
+                  className="bg-white/10 text-white p-2.5 rounded-lg backdrop-blur-lg border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 appearance-none"
+                >
+                  <option className="bg-gray-800 text-white">All</option>
+                  <option className="bg-gray-800 text-white">Upcoming</option>
+                  <option className="bg-gray-800 text-white">Ongoing</option>
+                  <option className="bg-gray-800 text-white">
+                    Completed
+                  </option>
+                  <option className="bg-gray-800 text-white">
+                    Cancelled
+                  </option>
+                  <option className="bg-gray-800 text-white">
+                    Rescheduled
+                  </option>
+                </select>
+              </div>
 
-      {/* Filters - Export */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-        className="flex justify-between flex-wrap gap-2 bg-white/5 p-4 rounded-xl mb-6 backdrop-blur border border-white/10 shadow-lg"
-      >
-        <div className="text-sm text-gray-300">
-          {filteredEvents.length} events found
-        </div>
+              {/* Name */}
+              <div className="flex flex-col min-w-[200px]">
+                <label className="text-gray-300 mb-2 flex items-center gap-1">
+                  <FiSearch className="text-blue-400" />
+                  <span>Name</span>
+                </label>
+                <Input
+                  type="text"
+                  name="name"
+                  value={searchName}
+                  onChange={handleSearchChange}
+                  placeholder="Search From Name"
+                  className="bg-white/10 text-white border-white/20 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-4 py-2 rounded-lg hover:from-gray-800 hover:to-gray-950 transition-all h-fit self-end flex items-center gap-2 shadow-md"
+              onClick={clearFilters}
+            >
+              <span>Clear Filters</span>
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
+    {/* Filters - Export and Create Event */}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
+      className="flex justify-between flex-wrap gap-2 bg-white/5 p-4 rounded-xl mb-6 backdrop-blur border border-white/10 shadow-lg"
+    >
+      <div className="text-sm text-gray-300">
+        {filteredEvents.length} events found
+      </div>
+      <div className="flex items-center gap-2">
         <CSVLink
           data={exportData()}
           filename="events.csv"
@@ -450,286 +440,129 @@ export default function Home() {
           <FiDownload />
           <span>EXPORT</span>
         </CSVLink>
-      </motion.div>
 
-      {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full flex justify-center items-center py-20">
-            <div className="relative w-20 h-20">
-              <div className="w-20 h-20 border-4 border-blue-400 border-opacity-20 rounded-full"></div>
-              <div className="w-20 h-20 border-4 border-transparent border-t-blue-500 rounded-full animate-spin absolute top-0 left-0"></div>
-            </div>
-          </div>
-        ) : (
-          <AnimatePresence>
-            {filteredEvents.map((event, index) => (
-              <motion.div
-                key={event._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-
-                {event.event_image && (
-                  <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden">
-                    <Image
-                      src={event.event_image}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      alt={event.event_name}
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                    <div className="absolute bottom-0 right-0 p-2">
-                      <span
-                        className={`text-xs font-medium py-1 px-3 rounded-full ${getStatusColor(event.event_status)}`}
-                      >
-                        {event.event_status || "Unknown"}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <h3 className="text-2xl font-bold mb-2 text-white">
-                  {event.event_name}
-                </h3>
-
-                <div className="text-sm space-y-2 text-gray-300 flex-grow">
-                  <p className="flex items-center gap-2">
-                    <HiOutlineCalendar className="text-blue-400" />
-                    <span>{event.event_date}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiOutlineClock className="text-blue-400" />
-                    <span>{event.event_time}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiOutlineLocationMarker className="text-blue-400" />
-                    <span>{event.event_venue}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiOutlineTag className="text-blue-400" />
-                    <span>{event.event_type || "Unknown"}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiOutlineUserGroup className="text-blue-400" />
-                    <span>{event.event_held_by || "Unknown"}</span>
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <HiOutlineStatusOnline className="text-blue-400" />
-                    <span>
-                      Registrations: {registrationCounts[event._id] || 0}/
-                      {event.event_tickets || "unlimited"}
-                    </span>
-                  </p>
-                </div>
-
-                <div className="mt-4 flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <FiEdit />
-                    <span>EDIT</span>
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        )}
-      </div>
-
-      {/* No events found message */}
-      {!loading && filteredEvents.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-20 text-gray-400"
+        {/* Create New Event Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center gap-2 shadow-md"
+          onClick={() => setCreateEventModal(true)} // Assuming this will trigger a modal or new page for creating an event
         >
-          <p className="text-2xl font-light">
-            No events found matching your filters
-          </p>
-          <button
-            onClick={clearFilters}
-            className="mt-4 text-blue-400 hover:text-blue-300 underline"
-          >
-            Clear all filters
-          </button>
-        </motion.div>
-      )}
+          <span>Create New Event</span>
+        </motion.button>
+      </div>
+    </motion.div>
 
-      {/* Edit Modal */}
-      <AnimatePresence>
-        {selectedEvent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50 p-4"
-          >
+    {/* Events Grid */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {loading ? (
+        <div className="col-span-full flex justify-center items-center py-20">
+          <div className="relative w-20 h-20">
+            <div className="w-20 h-20 border-4 border-blue-400 border-opacity-20 rounded-full"></div>
+            <div className="w-20 h-20 border-4 border-transparent border-t-blue-500 rounded-full animate-spin absolute top-0 left-0"></div>
+          </div>
+        </div>
+      ) : (
+        <AnimatePresence>
+          {filteredEvents.map((event, index) => (
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              transition={{ type: "spring", damping: 25 }}
-              className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-white border border-white/10"
+              key={event._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="bg-white/5 rounded-2xl backdrop-blur-sm p-5 shadow-xl flex flex-col border border-white/10 hover:border-blue-500/30 transition-all duration-300 relative overflow-hidden group"
             >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                  Edit Event
-                </h2>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setSelectedEvent(null)}
-                  className="text-gray-400 hover:text-white text-xl"
-                >
-                  ✕
-                </motion.button>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Event Name
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedEvent.event_name}
-                    onChange={(e) =>
-                      setSelectedEvent({
-                        ...selectedEvent,
-                        event_name: e.target.value,
-                      })
-                    }
-                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="Event Name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={selectedEvent.event_date}
-                    onChange={(e) =>
-                      setSelectedEvent({
-                        ...selectedEvent,
-                        event_date: e.target.value,
-                      })
-                    }
-                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Time
-                  </label>
-                  <input
-                    type="time"
-                    value={selectedEvent.event_time}
-                    onChange={(e) =>
-                      setSelectedEvent({
-                        ...selectedEvent,
-                        event_time: e.target.value,
-                      })
-                    }
-                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Venue
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedEvent.event_venue}
-                    onChange={(e) =>
-                      setSelectedEvent({
-                        ...selectedEvent,
-                        event_venue: e.target.value,
-                      })
-                    }
-                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="Venue"
-                  />
-                </div>
-
-                {/* Status dropdown */}
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">
-                    Event Status
-                  </label>
-                  <select
-                    value={selectedEvent.event_status || "Upcoming"}
-                    onChange={(e) =>
-                      setSelectedEvent({
-                        ...selectedEvent,
-                        event_status: e.target.value,
-                      })
-                    }
-                    className="w-full p-2.5 bg-white/10 border border-white/20 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
-                  >
-                    <option>Upcoming</option>
-                    <option>Ongoing</option>
-                    <option>Completed</option>
-                    <option>Cancelled</option>
-                    <option>Rescheduled</option>
-                  </select>
-                </div>
-              </div>
-
-              {selectedEvent.event_image && (
-                <div className="mt-6 relative rounded-lg overflow-hidden h-48">
+              {event.event_image && (
+                <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden">
                   <Image
-                    src={selectedEvent.event_image}
-                    alt="Event"
+                    src={event.event_image}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    alt={event.event_name}
+                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
+                  <div className="absolute bottom-0 right-0 p-2">
+                    <span
+                      className={`text-xs font-medium py-1 px-3 rounded-full ${getStatusColor(event.event_status)}`}
+                    >
+                      {event.event_status || "Unknown"}
+                    </span>
+                  </div>
                 </div>
               )}
 
-              <div className="mt-6 space-y-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-3 rounded-lg w-full font-medium shadow-lg flex items-center justify-center gap-2"
-                  onClick={() => handleEdit(selectedEvent._id)}
-                >
-                  {buttonLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  ) : (
-                    <>
-                      <FiEdit />
-                      <span>Save Changes</span>
-                    </>
-                  )}
-                </motion.button>
+              <h3 className="text-2xl font-bold mb-2 text-white">
+                {event.event_name}
+              </h3>
 
+              <div className="text-sm space-y-2 text-gray-300 flex-grow">
+                <p className="flex items-center gap-2">
+                  <HiOutlineCalendar className="text-blue-400" />
+                  <span>{event.event_date}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <HiOutlineClock className="text-blue-400" />
+                  <span>{event.event_time}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <HiOutlineLocationMarker className="text-blue-400" />
+                  <span>{event.event_venue}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <HiOutlineTag className="text-blue-400" />
+                  <span>{event.event_type || "Unknown"}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <HiOutlineUserGroup className="text-blue-400" />
+                  <span>{event.event_held_by || "Unknown"}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <HiOutlineStatusOnline className="text-blue-400" />
+                  <span>
+                    Registrations: {registrationCounts[event._id] || 0}/
+                    {event.event_tickets || "unlimited"}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-4 flex gap-3">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg w-full font-medium transition-colors"
-                  onClick={() => setSelectedEvent(null)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 flex-1 justify-center shadow-md"
+                  onClick={() => setSelectedEvent(event)}
                 >
-                  Cancel
+                  <FiEdit />
+                  <span>EDIT</span>
                 </motion.button>
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ))}
+        </AnimatePresence>
+      )}
     </div>
-  );
-}
+
+    {/* No events found message */}
+    {!loading && filteredEvents.length === 0 && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-20 text-gray-400"
+      >
+        <p className="text-2xl font-light">
+          No events found matching your filters
+        </p>
+        <button
+          onClick={clearFilters}
+          className="mt-4 text-blue-400 hover:text-blue-300 underline"
+        >
+          Clear all filters
+        </button>
+      </motion.div>
+    )}
+  </div>
+)};
