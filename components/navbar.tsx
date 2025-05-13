@@ -11,8 +11,20 @@ import {
 import { AiOutlineUser } from "react-icons/ai";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function Navbar({ name = "NSBM Super App - Admin Interface" }) {
+  const router = useRouter();
+  
+  const handleLogout = () => {
+    // Clear authentication tokens from localStorage
+    localStorage.removeItem("NEXT_PUBLIC_SYS_API");
+    localStorage.removeItem("USER_ID");
+    
+    // Navigate to the root path
+    window.location.href = "/";
+  };
+  
   return (
     <div className="fixed top-0 left-0 w-full z-50 p-5">
       <div
@@ -43,6 +55,8 @@ export default function Navbar({ name = "NSBM Super App - Admin Interface" }) {
                 className="border-white/30 bg-white/10
                           backdrop-blur-lg hover:bg-white/20
                           transition duration-300 ease-in-out"
+                onClick={handleLogout}
+                title="Logout"
               >
                 <AiOutlineUser
                   size={30}
